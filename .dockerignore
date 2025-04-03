@@ -1,0 +1,32 @@
+# flyctl launch added from .gitignore
+# Ignore virtual environment directories
+**/.venv
+# Ignore Python bytecode files
+**/__pycache__
+
+# flyctl launch added from Frontend/.gitignore
+# Nuxt dev/build outputs
+Frontend/**/.output
+Frontend/**/.data
+Frontend/**/.nuxt
+Frontend/**/.nitro
+Frontend/**/.cache
+Frontend/**/dist
+
+# Node dependencies
+Frontend/**/node_modules
+
+# Logs
+Frontend/**/logs
+Frontend/**/*.log
+
+# Misc
+Frontend/**/.DS_Store
+Frontend/**/.fleet
+Frontend/**/.idea
+
+# Local env files
+Frontend/**/.env
+Frontend/**/.env.*
+!Frontend/**/.env.example
+fly.toml
