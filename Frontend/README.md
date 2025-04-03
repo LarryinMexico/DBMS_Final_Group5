@@ -1,75 +1,87 @@
-# Nuxt Minimal Starter
+# 📁 專案結構
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+```text
+.
+├── README.md
+├── app.vue
+├── assets
+│   └── css
+│       └── tailwind.css
+├── components
+│   ├── TheHeader
+│   │   ├── ColorModeButton.vue
+│   │   └── index.vue
+│   └── TheMap
+│       └── index.vue
+├── nuxt.config.ts
+├── package-lock.json
+├── package.json
+├── pages
+│   └── index.vue
+├── public
+│   ├── favicon.ico
+│   └── robots.txt
+├── server
+│   └── tsconfig.json
+└── tsconfig.json
+```
 
-## Setup
+## 🧪 開發與啟動方式
 
-Make sure to install dependencies:
+1. 安裝相依套件：
 
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+2. 啟動開發伺服器：
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+## 🧭 開發指引（如何加入新元件）
 
-Build the application for production:
+若你想要加入新的元件或頁面，可依循以下步驟操作：
 
-```bash
-# npm
-npm run build
+### 新增元件
 
-# pnpm
-pnpm build
+1. 建立新的元件檔案至 `components/` 目錄下，建議採用資料夾包裝的方式：
 
-# yarn
-yarn build
+   ```text
+   components/
+   └── MyComponent/
+       ├── index.vue
+       └── MyComponentUtils.ts
+   ```
 
-# bun
-bun run build
-```
+2. 在需要的頁面或父元件中引入並使用：
 
-Locally preview production build:
+   ```vue
+   <script setup>
+   import MyComponent from '@/components/MyComponent/index.vue'
+   </script>
 
-```bash
-# npm
-npm run preview
+   <template>
+     <MyComponent />
+   </template>
+   ```
 
-# pnpm
-pnpm preview
+### 串接 API
 
-# yarn
-yarn preview
+1. 建議集中處理 API 函式在 `utils/api/` 或 `composables/useApi.ts` 中
+2. 請使用 `.env` 檔設定 API base URL，例如： (部署中)
 
-# bun
-bun run preview
-```
+   ```text
+   API_URL=https://toilet-map-api-xyz.a.run.app
+   ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+3. 使用 `useFetch` 或 `useAsyncData` 進行資料取得
+
+## 🛠 技術棧
+
+- **框架**：Nuxt 3
+- **樣式**：Tailwind CSS
+- **地圖**：Mapbox GL JS
+- **認證**：Clerk
+- **部署**：Vercel
