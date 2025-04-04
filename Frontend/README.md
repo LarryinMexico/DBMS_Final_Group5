@@ -2,28 +2,29 @@
 
 ```text
 .
-├── README.md
-├── app.vue
-├── assets
+├── README.md                          # 📘 專案說明文件
+├── app.vue                            # 📲 Nuxt 預設入口，可自訂 layout 或 meta
+├── assets                             # 🎨 靜態資源（不會被 Webpack 轉譯）
 │   └── css
-│       └── tailwind.css
-├── components
-│   ├── TheHeader
-│   │   ├── ColorModeButton.vue
-│   │   └── index.vue
-│   └── TheMap
-│       └── index.vue
-├── nuxt.config.ts
-├── package-lock.json
-├── package.json
-├── pages
-│   └── index.vue
-├── public
-│   ├── favicon.ico
-│   └── robots.txt
+│       └── tailwind.css              # Tailwind CSS 主樣式匯入檔
+├── components                         # 🧩 Vue 元件
+│   ├── TheHeader                      # 頁首元件資料夾
+│   │   ├── ColorModeButton.vue       # 切換深/淺色模式按鈕
+│   │   └── index.vue                 # Header 主元件
+│   └── TheMap                         # 地圖顯示元件資料夾
+│       └── index.vue                 # 地圖主元件
+├── constants
+│   └── index.js                      # 📦 常數/環境變數定義（如 API URL）
+├── nuxt.config.ts                    # ⚙️ Nuxt 設定檔（包含 module、plugin 等）
+├── package-lock.json                 # 🔒 npm 鎖定檔，記錄精確套件版本
+├── package.json                      # 📦 套件管理與 script 定義
+├── pages                             
+│   └── index.vue                     # 🏠 頁面主入口（自動路由為 `/`）
 ├── server
-│   └── tsconfig.json
-└── tsconfig.json
+│   └── tsconfig.json                 # Server 專用 TypeScript 設定檔（若有 server function）
+├── tsconfig.json                     # TypeScript 設定檔（整體專案使用）
+└── utils
+    └── useUserRegister.js           # 🪄 自動註冊 Clerk 使用者的 Composable（已登入自動發送 API）
 ```
 
 ## 🧪 開發與啟動方式
