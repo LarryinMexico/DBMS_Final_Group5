@@ -1,11 +1,12 @@
 <script setup>
 //TODO: refactor to use `useUser` from `@clerk/vue`
-import { BASE_URL } from '@/constants/index.js'
 import { useAuth } from '@clerk/vue'
 
 const { user } = useUser()
 
 const { getToken, isSignedIn } = useAuth()
+
+const BASE_URL = useRuntimeConfig().public.apiBase
 
 watch(user, async (newUser) => {
     if (!newUser || !isSignedIn) return
@@ -18,6 +19,7 @@ watch(user, async (newUser) => {
     try {
         // 📝 嘗試註冊
         console.log(newUser.id, newUser.fullName, newUser.primaryEmailAddress?.emailAddress)
+        console.log(`${BASE_URL}/users`)
         await fetch(`${BASE_URL}/users`, {
             method: 'POST',
             headers: {
