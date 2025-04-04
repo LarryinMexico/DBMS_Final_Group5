@@ -6,21 +6,19 @@ const { user } = useUser()
 
 const { getToken, isSignedIn } = useAuth()
 
-const BASE_URL = useRuntimeConfig().public.apiBase
-
 watch(user, async (newUser) => {
     if (!newUser || !isSignedIn) return
 
     const token = await getToken.value()
-    console.log(`${BASE_URL}/users`)
+    console.log(`https://toilet-api-347656239330.asia-east1.run.app/users`)
     console.log('👤 使用者 token：', token)
     if (!token) return
 
     try {
         // 📝 嘗試註冊
         console.log(newUser.id, newUser.fullName, newUser.primaryEmailAddress?.emailAddress)
-        console.log(`${BASE_URL}/users`)
-        await fetch(`${BASE_URL}/users`, {
+        console.log(`https://toilet-api-347656239330.asia-east1.run.app/users`)
+        await fetch(`https://toilet-api-347656239330.asia-east1.run.app/users`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -34,7 +32,7 @@ watch(user, async (newUser) => {
         })
 
         // ✅ 拿自己資料
-        const res = await fetch(`${BASE_URL}/users/me`, {
+        const res = await fetch(`https://toilet-api-347656239330.asia-east1.run.app/users/me`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
