@@ -1,0 +1,32 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - feat/code-base
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Vercel CLI
+        run: |
+          curl -fsSL https://vercel.com/download -o vercel.tar.gz
+          tar -xvzf vercel.tar.gz
+          sudo mv vercel /usr/local/bin
+          vercel login ${{ secrets.VERCEL_EMAIL }}
+      
+      - name: Deploy to Vercel
+        run: |
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod  # 发布到生产环境
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }} 
+
+
+      - name: Deployment URL
+        run: |
+          echo "Deployment completed. View it here: https://<YOUR_PROJECT_NAME>.vercel.app"
