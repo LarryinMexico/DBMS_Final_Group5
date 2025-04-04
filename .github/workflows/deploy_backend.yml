@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - feat/code-base
-
+      - main
 jobs:
   deploy:
     name: 🚀 Deploy Toilet API to Cloud Run
