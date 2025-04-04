@@ -25,7 +25,7 @@ watch(user, async (newUser) => {
       // ❌ 未註冊 → 執行 POST 註冊
       console.log('🆕 尚未註冊，用戶 ID:', newUser.id)
 
-      const postRes = await fetch(`api/users`, {
+      const postRes = await fetch(`api/users/`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
