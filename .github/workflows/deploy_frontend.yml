@@ -18,12 +18,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-    
-      - name: Cd to frontend
-        run: cd Frontend
 
       - name: 📦 Install dependencies
-        run: npm install
-
-      - name: 🚀 Deploy to Vercel
-        run: npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        run: |
+          cd Frontend
+          npm install
+          npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes --name toilet-frontend
