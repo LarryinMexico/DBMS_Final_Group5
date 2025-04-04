@@ -11,6 +11,7 @@ watch(user, async (newUser) => {
     if (!newUser || !isSignedIn) return
 
     const token = await getToken.value()
+    console.log(`${BASE_URL}/users`)
     console.log('👤 使用者 token：', token)
     if (!token) return
 
