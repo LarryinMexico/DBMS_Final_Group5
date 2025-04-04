@@ -7,9 +7,6 @@ WORKDIR /app
 # 複製專案進 image
 COPY . .
 
-#Echo YOOO
-RUN echo "YOOO"
-
 # 安裝依賴
 RUN pip install --no-cache-dir -r requirements.txt
 
