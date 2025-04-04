@@ -3,21 +3,15 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - feat/code-base
-
-env:
-  REGION: asia-east1
-  SERVICE: toilet-api
-  REPOSITORY: toilet-api
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  IMAGE: asia-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/toilet-api/toilet-api
+      - feat/code-base  # 你的測試分支
 
 jobs:
   deploy:
+    name: 🚀 Deploy Toilet API to Cloud Run
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Authenticate to Google Cloud
@@ -25,23 +19,28 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      - name: Set up gcloud SDK
+      - name: Setup gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Configure Docker
+      - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker asia-east1-docker.pkg.dev --quiet
 
       - name: Build Docker image
-        run: docker build -t $IMAGE ./Backend
+        run: |
+          IMAGE=asia-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/toilet-api/toilet-api
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          docker build -t $IMAGE ./Backend
 
-      - name: Push Docker image
+      - name: Push Docker image to Artifact Registry
         run: docker push $IMAGE
 
       - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: ${{ env.SERVICE }}
-          image: ${{ env.IMAGE }}
-          region: ${{ env.REGION }}
+        run: |
+          gcloud run deploy toilet-api \
+            --image $IMAGE \
+            --region asia-east1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --project ${{ secrets.GCP_PROJECT_ID }}
