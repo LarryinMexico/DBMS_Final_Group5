@@ -27,7 +27,7 @@ jobs:
       
       - name: Deploy to Vercel
         run: |
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes --name frontend-toilet \
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
