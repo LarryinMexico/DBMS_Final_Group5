@@ -43,5 +43,5 @@ jobs:
             --region asia-east1 \
             --platform managed \
             --allow-unauthenticated \
-            --project ${{ secrets.GCP_PROJECT_ID }}
-            --service-account=githubcd@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --service-account toilet-api-executor@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
