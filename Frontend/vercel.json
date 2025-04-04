@@ -1,9 +1,8 @@
 {
-    "routes": [
+    "rewrites": [
       {
-        "src": "/api/(.*)",
-        "dest": "http://toilet-api-347656239330.asia-east1.run.app/$1",
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        "source": "/api/(.*)",
+        "destination": "https://toilet-api-347656239330.asia-east1.run.app/api/$1"
       }
     ]
   }

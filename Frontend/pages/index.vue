@@ -1,7 +1,6 @@
 <script setup>
 import { BASE_URL } from '@/constants/index.js'
 import { useAuth, useUser } from '@clerk/vue'
-import { id } from '@nuxt/ui/runtime/locale/index.js'
 import { watch } from 'vue'
 
 const { user } = useUser()
@@ -16,7 +15,7 @@ watch(user, async (newUser) => {
 
   try {
     // ✅ 先嘗試 GET 自己資料
-    const res = await fetch(`${BASE_URL}/users/me`, {
+    const res = await fetch(`api/users/me`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -26,7 +25,7 @@ watch(user, async (newUser) => {
       // ❌ 未註冊 → 執行 POST 註冊
       console.log('🆕 尚未註冊，用戶 ID:', newUser.id)
 
-      const postRes = await fetch(`${BASE_URL}/users`, {
+      const postRes = await fetch(`api/users`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
