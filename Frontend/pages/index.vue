@@ -1,5 +1,6 @@
 <script setup>
 //TODO: refactor to use `useUser` from `@clerk/vue`
+import { BASE_URL } from '@/constants/index.js'
 import { useAuth } from '@clerk/vue'
 
 const { user } = useUser()
@@ -10,15 +11,13 @@ watch(user, async (newUser) => {
     if (!newUser || !isSignedIn) return
 
     const token = await getToken.value()
-    console.log(`https://toilet-api-347656239330.asia-east1.run.app/users`)
     console.log('👤 使用者 token：', token)
     if (!token) return
 
     try {
         // 📝 嘗試註冊
         console.log(newUser.id, newUser.fullName, newUser.primaryEmailAddress?.emailAddress)
-        console.log(`https://toilet-api-347656239330.asia-east1.run.app/users`)
-        await fetch(`https://toilet-api-347656239330.asia-east1.run.app/users`, {
+        await fetch(`${BASE_URL}/users`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -32,7 +31,7 @@ watch(user, async (newUser) => {
         })
 
         // ✅ 拿自己資料
-        const res = await fetch(`https://toilet-api-347656239330.asia-east1.run.app/users/me`, {
+        const res = await fetch(`${BASE_URL}/users/me`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

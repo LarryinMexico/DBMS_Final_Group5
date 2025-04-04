@@ -1,7 +1,7 @@
 {
     "routes": [
       {
-        "src": "/users/(.*)",
+        "src": "/api/(.*)",
         "dest": "https://toilet-api-347656239330.asia-east1.run.app/$1",
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
       }

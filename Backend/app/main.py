@@ -4,7 +4,7 @@ from app.routers import user
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(root_path="/api")
 app.include_router(user.router, prefix="/users", tags=["Users"])
 
 app.add_middleware(
