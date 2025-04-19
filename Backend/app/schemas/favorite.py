@@ -10,5 +10,4 @@ class FavoriteAdd():
     ToiletID: int
 
 class FavoriteDel():
-    UserID: int
-    ToiletID: int
+    FavoriteID: int
