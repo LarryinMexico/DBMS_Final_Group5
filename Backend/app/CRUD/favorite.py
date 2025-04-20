@@ -11,11 +11,11 @@ def add_toilet(db: Session, UserID: int, ToiletID: int):
         ToiletID = ToiletID
     )
     db.add(new_fav)
-    db.commit
-    return "Toielet was added sucessfully"
+    db.commit()
+    return "Toielet added sucessfully"
 
 def del_toilet(db: Session, FavoriteID: int):
     del_fav=db.query(models.Favorite).filter(models.Favorite.FavoriteID == FavoriteID).first()
     db.delete(del_fav)
-    db.commit
-    return "Toielet was deleted sucessfully"
+    db.commit()
+    return "Toielet deleted sucessfully"

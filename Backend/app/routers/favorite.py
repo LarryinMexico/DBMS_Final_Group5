@@ -13,3 +13,19 @@ def list_favorite(
     db: Session = Depends(get_db)
 ):
     return crud_favorite.get_favorite_list(db, user.UserID)
+
+@router.post("/addList")
+def add_favorite(
+    user: favorite_schema.FavoriteAdd,
+    db: Session = Depends(get_db)
+):
+    if crud_favorite.add_toilet(db, user.UserID, user.ToiletID) == "Toielet added sucessfully":
+        return {"message": "Toielet added sucessfully"}
+
+@router.post("/delList")
+def del_favorite(
+    user: favorite_schema.FavoriteDel,
+    db: Session = Depends(get_db)
+):
+    if crud_favorite.del_toilet(db, user.FavoriteID) == "Toielet deleted sucessfully":
+        return {"message": "Toielet deleted sucessfully"}

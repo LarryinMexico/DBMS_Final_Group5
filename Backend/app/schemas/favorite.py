@@ -2,12 +2,12 @@
 
 from pydantic import BaseModel
 
-class FavoriteCheck():
+class FavoriteCheck(BaseModel):
     UserID: int
 
-class FavoriteAdd():
+class FavoriteAdd(BaseModel):
     UserID: int
     ToiletID: int
 
-class FavoriteDel():
+class FavoriteDel(BaseModel):
     FavoriteID: int
