@@ -3,11 +3,11 @@
 from pydantic import BaseModel
 
 class FavoriteCheck(BaseModel):
-    UserID: int
+    user_id: int
 
 class FavoriteAdd(BaseModel):
-    UserID: int
-    ToiletID: int
+    user_id: int
+    toilet_id: int
 
 class FavoriteDel(BaseModel):
-    FavoriteID: int
+    id: int
