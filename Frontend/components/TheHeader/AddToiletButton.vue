@@ -5,6 +5,51 @@ import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import ToiletMapSelector from '@/components/TheHeader/ToiletMapSelector.vue'
 import { reverseGeocode } from '@/utils/reverseGeocode.js'
+import { onMounted } from 'vue'
+import { useToiletAPI } from '@/utils/useToiletAPI.js'
+import { BASE_URL } from '~/constants'
+import { useAuth } from '@clerk/vue'
+
+const { postToilet } = useToiletAPI()
+const { getToken } = useAuth()
+
+
+const buildingOptions = ref([])
+const buildingMap = ref({}) // 用來查 max_floor & id
+
+onMounted(async () => {
+  const res = await fetch(`${BASE_URL}/buildings/`)
+  const buildings = await res.json()
+
+  buildingOptions.value = buildings.map(b => ({
+    label: b.name,
+    value: b.id
+  }))
+
+  buildingMap.value = Object.fromEntries(
+    buildings.map(b => [b.id, b])
+  )
+})
+
+const floorOptions = computed(() => {
+  if (locationSource.value === 'building') {
+    const id = values.building?.value
+    const max = buildingMap.value[id]?.max_floor ?? 0
+    return Array.from({ length: max }, (_, i) => ({
+      label: `${i + 1} 樓`,
+      value: `${i + 1}`,
+    }))
+  }
+  const min = Number(values.floorMin ?? 1)
+  const max = Number(values.floorMax)
+  if (isNaN(min) || isNaN(max) || min > max) return []
+  return Array.from({ length: max - min + 1 }, (_, i) => {
+    const floorNum = min + i
+    const label = floorNum < 0 ? `B${Math.abs(floorNum)}` : `${floorNum} 樓`
+    return { label, value: `${floorNum}` }
+  })
+})
+
 
 const isOpen = ref(false)
 const isSubmitting = ref(false)
@@ -14,17 +59,10 @@ const address = reverseGeocode(location.value.lng, location.value.lat)
 
 watch(location, async (newLocation) => {
   if (locationSource.value === 'custom') {
-    console.log('Custom location selected:', newLocation)
     address.value = await reverseGeocode(newLocation)
     buildingName.value = address.value
   }
 })
-
-
-const buildingOptions = [
-  { label: '商學院', value: 'commerce' },
-  { label: '達賢圖書館', value: 'library' },
-]
 
 const typeOptions = [
   { label: '男廁', value: 'male' },
@@ -45,37 +83,16 @@ const toiletSchema = toTypedSchema(
   })
 )
 
-const { handleSubmit, errors, defineField, values } = useForm({
+const { errors, defineField, values } = useForm({
   validationSchema: toiletSchema,
 })
 
 const [building, buildingAttrs] = defineField('building')
 const [buildingName, buildingNameAttrs] = defineField('buildingName')
-const [floorMin, floorMinAttrs] = defineField('floorMin')
 const [floorMax, floorMaxAttrs] = defineField('floorMax')
 const [floor, floorAttrs] = defineField('floor')
 const [type, typeAttrs] = defineField('type')
 const [name, nameAttrs] = defineField('name')
-
-const floorOptions = computed(() => {
-  const count = (() => {
-    if (locationSource.value === 'building') {
-      switch (values.building?.value) {
-        case 'commerce': return 12
-        case 'library': return 8
-        default: return 0
-      }
-    }
-    if (values.floorMax) {
-      return Number(values.floorMax) || 0
-    }
-    return 0
-  })()
-  return Array.from({ length: count }, (_, i) => ({
-    label: `${i + 1} 樓`,
-    value: `${i + 1}`,
-  }))
-})
 
 const isSubmitDisabled = computed(() => {
   return (
@@ -88,21 +105,54 @@ const isSubmitDisabled = computed(() => {
 async function onSubmit(values) {
   isSubmitting.value = true
   try {
-    console.log('新增廁所資訊', values, location.value)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-  } catch (error) {
-    console.error(error)
-  } finally {
-    const toast = useToast()
-    toast.add({
+    const token = await getToken.value()
+    if (!token) throw new Error('未登入')
+
+    let building_id
+
+    if (locationSource.value === 'custom') {
+      const newBuildingRes = await fetch(`${BASE_URL}/buildings/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: values.buildingName,
+          max_floor: Number(values.floorMax),
+          lat: location.value.lat,
+          lng: location.value.lng
+        })
+      })
+
+      if (!newBuildingRes.ok) throw new Error('無法新增建築')
+      const newBuilding = await newBuildingRes.json()
+      building_id = newBuilding.id
+    } else {
+      building_id = Number(values.building?.value)
+    }
+
+    await postToilet({
+      building_id,
+      floor: Number(values.floor?.value),
+      type: values.type?.value,
+      title: values.name ?? '',
+    })
+
+    useToast().add({
       title: 'Success',
       description: '成功新增廁所資訊',
       color: 'success'
     })
     isOpen.value = false
+  } catch (error) {
+    console.error('送出失敗:', error)
+    useToast().add({ title: '錯誤', description: error.message, color: 'red' })
+  } finally {
     isSubmitting.value = false
   }
 }
+
 </script>
 
 <template>
@@ -152,17 +202,14 @@ async function onSubmit(values) {
 
               <div v-else class="space-y-4 mt-4">
                 <div class="flex gap-2">
-                <UFormField label="最低樓層" required>
-                  <UInput type="number" v-model="floorMin" v-bind="floorMinAttrs" class="w-full" />
-                </UFormField>
-                <UFormField label="最高樓層" required>
-                  <UInput type="number" v-model="floorMax" v-bind="floorMaxAttrs" class="w-full" />
+                  <UFormField label="建築名稱" required class="w-full">
+                    <UInput class="w-full" v-model="buildingName" v-bind="buildingNameAttrs" />
                 </UFormField>
                 </div>
 
                 <div class="flex gap-2">
-                <UFormField label="建築名稱" required class="w-full">
-                    <UInput class="w-full" v-model="buildingName" v-bind="buildingNameAttrs" />
+                  <UFormField label="最高樓層" required class="w-full">
+                  <UInput type="number" v-model="floorMax" v-bind="floorMaxAttrs" class="w-full" />
                 </UFormField>
                 <UFormField label="新增樓層" required class="w-full">
                 <USelectMenu

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models import Building as models
+from app.models import building as models
 from app.schemas import building as schemas
 
 def get_building(db: Session, building_id: int):

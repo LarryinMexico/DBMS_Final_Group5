@@ -10,7 +10,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from app.models.toilet import Toilet
-from app.models.Building import Building
+from app.models.building import Building
 from app.db.base import Base
 
 # this is the Alembic Config object, which provides
