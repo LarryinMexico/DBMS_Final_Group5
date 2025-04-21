@@ -3,9 +3,23 @@ import { ref, computed } from 'vue'
 import { z } from 'zod'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
+import ToiletMapSelector from '@/components/TheHeader/ToiletMapSelector.vue'
+import { reverseGeocode } from '@/utils/reverseGeocode.js'
 
 const isOpen = ref(false)
 const isSubmitting = ref(false)
+const location = ref({ lng:121.5773869, lat:24.9878484 })
+const locationSource = ref('building')
+const address = reverseGeocode(location.value.lng, location.value.lat)
+
+watch(location, async (newLocation) => {
+  if (locationSource.value === 'custom') {
+    console.log('Custom location selected:', newLocation)
+    address.value = await reverseGeocode(newLocation)
+    buildingName.value = address.value
+  }
+})
+
 
 const buildingOptions = [
   { label: '商學院', value: 'commerce' },
@@ -21,9 +35,12 @@ const typeOptions = [
 
 const toiletSchema = toTypedSchema(
   z.object({
-    building: z.string({ required_error: '請選擇建築物' }),
-    type: z.string({ required_error: '請選擇廁所類型' }),
+    building: z.string().optional(),
+    buildingName: z.string().optional(),
+    floorMin: z.string().optional(),
+    floorMax: z.string().optional(),
     floor: z.string({ required_error: '請選擇樓層' }),
+    type: z.string({ required_error: '請選擇廁所類型' }),
     name: z.string().optional(),
   })
 )
@@ -33,21 +50,26 @@ const { handleSubmit, errors, defineField, values } = useForm({
 })
 
 const [building, buildingAttrs] = defineField('building')
-const [type, typeAttrs] = defineField('type')
+const [buildingName, buildingNameAttrs] = defineField('buildingName')
+const [floorMin, floorMinAttrs] = defineField('floorMin')
+const [floorMax, floorMaxAttrs] = defineField('floorMax')
 const [floor, floorAttrs] = defineField('floor')
+const [type, typeAttrs] = defineField('type')
 const [name, nameAttrs] = defineField('name')
 
 const floorOptions = computed(() => {
   const count = (() => {
-    if (!values.building) return 0
-    switch (values.building.value) {
-      case 'commerce':
-        return 12
-      case 'library':
-        return 8
-      default:
-        return 0
+    if (locationSource.value === 'building') {
+      switch (values.building?.value) {
+        case 'commerce': return 12
+        case 'library': return 8
+        default: return 0
+      }
     }
+    if (values.floorMax) {
+      return Number(values.floorMax) || 0
+    }
+    return 0
   })()
   return Array.from({ length: count }, (_, i) => ({
     label: `${i + 1} 樓`,
@@ -57,9 +79,8 @@ const floorOptions = computed(() => {
 
 const isSubmitDisabled = computed(() => {
   return (
-    !values.building ||
-    !values.type ||
     !values.floor ||
+    !values.type ||
     isSubmitting.value
   )
 })
@@ -67,27 +88,17 @@ const isSubmitDisabled = computed(() => {
 async function onSubmit(values) {
   isSubmitting.value = true
   try {
-    console.log('新增廁所資訊', values.building)
-    // TODO: 呼叫 API 建立廁所
-    // Set time out for 1 second to simulate API call
+    console.log('新增廁所資訊', values, location.value)
     await new Promise((resolve) => setTimeout(resolve, 1000))
   } catch (error) {
-    // TODO: 顯示錯誤通知
+    console.error(error)
   } finally {
-    const toast = useToast()    
+    const toast = useToast()
     toast.add({
-        title: 'Success',
-        description: 'Your action was completed successfully.',
-        color: 'success'
+      title: 'Success',
+      description: '成功新增廁所資訊',
+      color: 'success'
     })
-    // Reset the form and close the modal
-    handleSubmit(() => {
-      // Reset the form values
-      building.value = ''
-      type.value = ''
-      floor.value = ''
-      name.value = ''
-    })()
     isOpen.value = false
     isSubmitting.value = false
   }
@@ -95,33 +106,28 @@ async function onSubmit(values) {
 </script>
 
 <template>
-    <div>
-      <USlideover
-        v-model:open="isOpen"
-        :title="`新增廁所資訊 ${values.building ? ` @${values.building.label}` : ''}${values.floor ? ` -${values.floor.label}` : ''}`"
-      >
-      <UButton icon="i-lucide-plus" color="green" variant="solid">
-        新增廁所
-      </UButton>
-        <template #body>
-            <div class="flex flex-col h-full justify-start gap-y-10">
-            <!-- 地點來源 -->
-            <UCard>
-              <template #header>
-                <h2 class="text-base font-bold">地點資訊</h2>
-              </template>
-              <template #default>
-                <URadioGroup
-                  label="地點來源"
-                  :items="[
-                    { label: '選擇現有建築', value: 'building' },
-                    { label: '自行輸入位置（尚未支援）', value: 'custom', disabled: true },
-                  ]"
-                  model-value="building"
-                  disabled
-                />
-                <div class="flex flex-row justify-between py-5 space-x-2">
-  
+  <div>
+    <USlideover v-model:open="isOpen" title="新增廁所資訊">
+    <UButton icon="i-lucide-plus" color="green" variant="solid" @click="isOpen = true">
+      新增廁所
+    </UButton>
+      <template #body>
+        <div class="flex flex-col h-full justify-start gap-y-10">
+          <UCard>
+            <template #header>
+              <h2 class="text-base font-bold">地點資訊</h2>
+            </template>
+            <template #default>
+              <URadioGroup
+                label="地點來源"
+                :items="[
+                  { label: '選擇現有建築', value: 'building' },
+                  { label: '自行輸入位置', value: 'custom' },
+                ]"
+                v-model="locationSource"
+              />
+
+              <div v-if="locationSource === 'building'" class="flex flex-row justify-between py-5 space-x-2">
                 <USelectMenu
                   label="選擇建築"
                   :items="buildingOptions"
@@ -131,7 +137,7 @@ async function onSubmit(values) {
                   class="w-1/2"
                   :searchInput="false"
                 />
-  
+
                 <USelectMenu
                   :searchInput="false"
                   label="選擇樓層"
@@ -140,19 +146,46 @@ async function onSubmit(values) {
                   v-bind="floorAttrs"
                   :error="errors.floor"
                   :disabled="!values.building"
-                  :loading="!values.building"
                   class="w-1/2"
                 />
+              </div>
+
+              <div v-else class="space-y-4 mt-4">
+                <div class="flex gap-2">
+                <UFormField label="最低樓層" required>
+                  <UInput type="number" v-model="floorMin" v-bind="floorMinAttrs" class="w-full" />
+                </UFormField>
+                <UFormField label="最高樓層" required>
+                  <UInput type="number" v-model="floorMax" v-bind="floorMaxAttrs" class="w-full" />
+                </UFormField>
+                </div>
+
+                <div class="flex gap-2">
+                <UFormField label="建築名稱" required class="w-full">
+                    <UInput class="w-full" v-model="buildingName" v-bind="buildingNameAttrs" />
+                </UFormField>
+                <UFormField label="新增樓層" required class="w-full">
+                <USelectMenu
+                  label="新增樓層"
+                  :items="floorOptions"
+                  v-model="floor"
+                  v-bind="floorAttrs"
+                  :error="errors.floor"
+                  :searchInput="false"
+                  class="w-full"
+                />
+                </UFormField>
             </div>
-              </template>
-            </UCard>
-  
-            <!-- 廁所資訊 -->
-            <UCard>
-              <template #header>
-                <h2 class="text-base font-bold">廁所資訊</h2>
-              </template>
-              <template #default>
+                <ToiletMapSelector v-model="location" class="mt-2 rounded overflow-hidden h-72" />
+              </div>
+            </template>
+          </UCard>
+
+          <UCard>
+            <template #header>
+              <h2 class="text-base font-bold">廁所資訊</h2>
+            </template>
+            <template #default>
               <div class="flex flex-row justify-between py-5 space-x-2">
                 <USelectMenu
                   :searchInput="false"
@@ -163,7 +196,7 @@ async function onSubmit(values) {
                   :error="errors.type"
                   class="w-1/2"
                 />
-  
+
                 <UInput
                   label="名稱（選填）"
                   placeholder="例如：靠近電梯的廁所"
@@ -171,24 +204,23 @@ async function onSubmit(values) {
                   v-bind="nameAttrs"
                   class="w-1/2"
                 />
-                </div>
-              </template>
-            </UCard>
-            </div>
-        </template>
-        <template #footer>
+              </div>
+            </template>
+          </UCard>
+        </div>
+      </template>
+      <template #footer>
         <UButton
-              type="submit"
-              color="primary"
-              block
-              :loading="isSubmitting"
-              :disabled="isSubmitDisabled"
-              @click="onSubmit(values)"
-            >
-              送出
-            </UButton>
-        </template>
-      </USlideover>
-    </div>
-  </template>
-  
+          type="submit"
+          color="primary"
+          block
+          :loading="isSubmitting"
+          :disabled="isSubmitDisabled"
+          @click="onSubmit(values)"
+        >
+          送出
+        </UButton>
+      </template>
+    </USlideover>
+  </div>
+</template>
