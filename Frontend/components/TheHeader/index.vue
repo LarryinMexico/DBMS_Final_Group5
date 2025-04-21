@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ColorModeButton from './ColorModeButton.vue';
+import AddToiletButton from './AddToiletButton.vue';
 </script>
 
 <template>
@@ -11,6 +12,9 @@ import ColorModeButton from './ColorModeButton.vue';
 
     <!-- 右邊功能區 -->
     <div class="flex items-center gap-3">
+      <!-- 新增廁所按鈕 -->
+      <AddToiletButton />
+
       <!-- 暗色模式切換 -->
       <ColorModeButton />
 
