@@ -7,14 +7,14 @@ from typing import List
 
 router = APIRouter()
 
-@router.post("/getList")
+@router.get("/list/{user_id}")
 def list_favorite(
-    user: favorite_schema.FavoriteCheck,
+    user_id: int,
     db: Session = Depends(get_db)
 ):
-    return crud_favorite.get_favorite_list(db, user.user_id)
+    return crud_favorite.get_favorite_list(db, user_id)
 
-@router.post("/addList")
+@router.post("/add")
 def add_favorite(
     user: favorite_schema.FavoriteAdd,
     db: Session = Depends(get_db)
@@ -22,10 +22,10 @@ def add_favorite(
     if crud_favorite.add_toilet(db, user.user_id, user.toilet_id) == "Toilet added sucessfully":
         return {"message": "Toilet added sucessfully"}
 
-@router.post("/delList")
+@router.delete("/delete/{id}")
 def del_favorite(
-    user: favorite_schema.FavoriteDel,
+    id: int,
     db: Session = Depends(get_db)
 ):
-    if crud_favorite.del_toilet(db, user.id) == "Toilet deleted sucessfully":
+    if crud_favorite.del_toilet(db, id) == "Toilet deleted sucessfully":
         return {"message": "Toilet deleted sucessfully"}
