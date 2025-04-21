@@ -3,7 +3,7 @@ from app.models import building as models
 from app.schemas import building as schemas
 
 def get_building(db: Session, building_id: int):
-    return db.query(models.Building).filter(models.Building.building_id == building_id).first()
+    return db.query(models.Building).filter(models.Building.id == building_id).first()
 
 def get_buildings(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Building).offset(skip).limit(limit).all()

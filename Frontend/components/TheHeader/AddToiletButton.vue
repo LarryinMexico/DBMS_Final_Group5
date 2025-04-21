@@ -104,8 +104,13 @@ const isSubmitDisabled = computed(() => {
   )
 })
 
+let hasSubmitted = false
+
 async function onSubmit(values) {
+  if (hasSubmitted) return
+  hasSubmitted = true
   isSubmitting.value = true
+
   try {
     const token = await getToken.value()
     if (!token) throw new Error('未登入')
@@ -153,6 +158,7 @@ async function onSubmit(values) {
     useToast().add({ title: '錯誤', description: error.message, color: 'red' })
   } finally {
     isSubmitting.value = false
+    hasSubmitted = false // reset flag
   }
 }
 

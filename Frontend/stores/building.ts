@@ -12,16 +12,6 @@ export const useBuildingStore = defineStore('building', () => {
   }
 
   async function addBuilding(newBuilding: any) {
-    const res = await fetch(`${BASE_URL}/buildings/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newBuilding)
-    })
-
-    if (!res.ok) throw new Error('新增建築失敗')
-
     await fetchBuildings() // 新增後自動更新列表
   }
 
