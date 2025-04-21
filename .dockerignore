@@ -30,7 +30,3 @@ Frontend/**/.env
 Frontend/**/.env.*
 !Frontend/**/.env.example
 fly.toml
-
-.venv/
-__pycache__/
-*.pyc
