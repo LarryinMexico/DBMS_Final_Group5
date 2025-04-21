@@ -9,7 +9,7 @@ export function useToiletAPI() {
     const token = await getToken.value()
     if (!token) throw new Error('No token found')
 
-    const res = await fetch(`${BASE_URL}/toilets`, {
+    const res = await fetch(`${BASE_URL}/toilets/`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
