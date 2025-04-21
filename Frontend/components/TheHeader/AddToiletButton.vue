@@ -9,7 +9,9 @@ import { onMounted } from 'vue'
 import { useToiletAPI } from '@/utils/useToiletAPI.js'
 import { BASE_URL } from '~/constants'
 import { useAuth } from '@clerk/vue'
+import { useBuildingStore } from '~/stores/building'
 
+const buildingStore = useBuildingStore()
 const { postToilet } = useToiletAPI()
 const { getToken } = useAuth()
 
@@ -128,6 +130,7 @@ async function onSubmit(values) {
       if (!newBuildingRes.ok) throw new Error('無法新增建築')
       const newBuilding = await newBuildingRes.json()
       building_id = newBuilding.id
+      await buildingStore.addBuilding(newBuilding)
     } else {
       building_id = Number(values.building?.value)
     }
