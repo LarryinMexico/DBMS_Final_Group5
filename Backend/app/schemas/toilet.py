@@ -6,7 +6,7 @@ class ToiletBase(BaseModel):
     building_id: int
     floor: int
     type: str
-    availibility: str
+    availibility: Optional[str] = None
     title: str
 
 class ToiletCreate(ToiletBase):
