@@ -33,30 +33,39 @@ function backToList() {
 <template>
   <UDrawer v-model="localOpen" direction="left" @close="emit('close')">
     <template #header>
-  <div class="relative flex items-center justify-between px-4 py-2">
-    <!-- 左側：返回 -->
-    <div>
-      <UButton
-        v-if="selectedToilet"
-        variant="ghost"
-        icon="i-lucide-chevron-left"
-        class="text-md text-gray-500 hover:text-gray-700"
-        @click="backToList"
-        label="返回"
-      />
-    </div>
+      <div class="px-4 py-2">
+        <div v-if="selectedToilet" class="relative flex items-center justify-between">
+          <!-- 左：返回 -->
+          <div>
+            <UButton
+              variant="ghost"
+              icon="i-lucide-chevron-left"
+              class="text-md text-gray-500 hover:text-gray-700"
+              @click="backToList"
+              label="返回"
+            />
+          </div>
 
-    <!-- 中間：標題 -->
-    <h2 class="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold truncate">
-      {{ selectedToilet ? selectedToilet.title || '廁所詳情' : buildingName }}
-    </h2>
+          <!-- 中：標題（置中） -->
+          <h2 class="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold truncate">
+            {{ selectedToilet.title || '廁所詳情' }}
+          </h2>
 
-    <!-- 右側：關閉 -->
-    <div>
-      <UButton icon="i-lucide-x" variant="ghost" @click="emit('close')" />
-    </div>
-  </div>
-</template>
+          <!-- 右：關閉 -->
+          <div>
+            <UButton icon="i-lucide-x" variant="ghost" @click="emit('close')" />
+          </div>
+        </div>
+
+        <div v-else class="flex items-center justify-between">
+          <!-- 左：建築名稱 -->
+          <h2 class="text-lg font-bold truncate">{{ buildingName }}</h2>
+
+          <!-- 右：關閉 -->
+          <UButton icon="i-lucide-x" variant="ghost" @click="emit('close')" />
+        </div>
+      </div>
+    </template>
 
 
     <template #body>
