@@ -5,6 +5,8 @@ useUserRegister()
 </script>
 
 <template>
+<UApp>
   <TheHeader />
   <TheMap />
+</UApp>
 </template>

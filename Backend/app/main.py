@@ -1,12 +1,11 @@
 # app/main.py
 from fastapi import FastAPI
-from app.routers import user, favorite
+from app.routers import user, toilet, building, favorite
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(root_path="/api")
 app.include_router(user.router, prefix="/users", tags=["Users"])
-app.include_router(favorite.router, prefix="/favorite", tags=["Favorite"])
 
 app.add_middleware(
     CORSMiddleware,

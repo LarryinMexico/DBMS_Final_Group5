@@ -1,17 +1,13 @@
-# 使用輕量版 Python image
-FROM python:3.12-slim
+FROM python:3.13-slim
 
-# 設定工作目錄
 WORKDIR /app
 
-# 複製專案進 image
-COPY . .
+COPY requirements.txt .
+COPY app ./app
 
-# 安裝依賴
+ENV PYTHONPATH=/app
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 對外開放 port 8000
 EXPOSE 8080
-
-# 啟動 FastAPI
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
