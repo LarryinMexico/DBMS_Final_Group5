@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import mapboxgl from 'mapbox-gl'
 import { onMounted, ref, watch } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 import { useBuildingStore } from '~/stores/building'
+import ToiletTable from './ToiletTable.vue'
 
 const colorMode = useColorMode()
 const buildingStore = useBuildingStore()
@@ -19,20 +21,32 @@ const getMapStyle = () => {
 }
 
 // ✅ 渲染建築 Marker
-function renderBuildingMarkers() {
+async function renderBuildingMarkers() {
   if (!mapInstance.value) return
 
-  buildingStore.buildings.forEach((building: any) => {
+  buildingStore.buildings.forEach(async (building: any) => {
     const el = document.createElement('div')
     el.className = 'building-marker'
     el.style.width = '12px'
     el.style.height = '12px'
     el.style.backgroundColor = '#3b82f6'
     el.style.borderRadius = '50%'
-    
+
+    // ✅ 取得該建築物的廁所資訊
+    const toiletsRes = await fetch(`https://toilet-api-347656239330.asia-east1.run.app/api/toilets/building/${building.id}`)
+    const toilets = await toiletsRes.json()
+
+    // ✅ 渲染 Vue 元件為 HTML 字串
+    const popupHtml = await renderToString(
+      h(ToiletTable, {
+        toilets,
+        buildingName: building.name
+      })
+    )
+
     new mapboxgl.Marker(el)
       .setLngLat([building.lng, building.lat])
-      .setPopup(new mapboxgl.Popup().setText(building.name))
+      .setPopup(new mapboxgl.Popup().setHTML(popupHtml))
       .addTo(mapInstance.value as any)
   })
 }
