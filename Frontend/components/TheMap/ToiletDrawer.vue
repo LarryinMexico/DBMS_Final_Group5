@@ -14,6 +14,11 @@ const emit = defineEmits(['close'])
 const localOpen = ref(props.isOpen)
 const selectedToilet = ref<typeof props.toilets[0] | null>(null)
 
+// watch selectedToilet and log
+watch(selectedToilet, (val) => {
+  console.log('selectedToilet changed:', val)
+})
+
 watch(() => props.isOpen, val => {
   localOpen.value = val
 })
@@ -26,33 +31,43 @@ function backToList() {
 
 
 <template>
-    <UDrawer v-model="localOpen" direction="left" @close="emit('close')">
-      <template #header>
-        <div class="flex justify-between items-center px-4 py-2">
-          <h2 class="text-lg font-bold truncate">
-            {{ selectedToilet ? selectedToilet.title || '廁所詳情' : buildingName }}
-          </h2>
-          <UButton icon="i-lucide-x" variant="ghost" @click="emit('close')" />
-        </div>
-      </template>
-  
-      <template #body>
-        <div class="p-4 min-w-[350px] space-y-4 overflow-y-auto">
-          <!-- 列表頁面 -->
-          <ToiletCardList
-            v-if="!selectedToilet"
-            :toilets="toilets"
-            @select="(toilet) => (selectedToilet = toilet)"
-          />
-  
-          <!-- 詳細頁面 -->
-          <ToiletDetail
-            v-else
-            :toilet="selectedToilet"
-            @back="backToList"
-          />
-        </div>
-      </template>
-    </UDrawer>
-  </template>
+  <UDrawer v-model="localOpen" direction="left" @close="emit('close')">
+    <template #header>
+  <div class="relative flex items-center justify-between px-4 py-2">
+    <!-- 左側：返回 -->
+    <div>
+      <UButton
+        v-if="selectedToilet"
+        variant="ghost"
+        icon="i-lucide-chevron-left"
+        class="text-md text-gray-500 hover:text-gray-700"
+        @click="backToList"
+        label="返回"
+      />
+    </div>
+
+    <!-- 中間：標題 -->
+    <h2 class="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold truncate">
+      {{ selectedToilet ? selectedToilet.title || '廁所詳情' : buildingName }}
+    </h2>
+
+    <!-- 右側：關閉 -->
+    <div>
+      <UButton icon="i-lucide-x" variant="ghost" @click="emit('close')" />
+    </div>
+  </div>
+</template>
+
+
+    <template #body>
+      <div class="p-4 min-w-[350px] space-y-4 overflow-y-auto">
+        <!-- 列表頁面 -->
+        <ToiletCardList v-if="!selectedToilet" :toilets="toilets" @select="(toilet) => (selectedToilet = toilet)" />
+
+        <!-- 詳細頁面 -->
+        <ToiletDetail v-else :toilet="selectedToilet" />
+      </div>
+    </template>
+  </UDrawer>
+</template>
   
