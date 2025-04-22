@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(root_path="/api")
 app.include_router(user.router, prefix="/users", tags=["Users"])
+app.include_router(toilet.router, prefix="/toilets", tags=["Toilets"])
+app.include_router(building.router, prefix="/buildings", tags=["Buildings"])
 
 app.add_middleware(
     CORSMiddleware,
