@@ -14,11 +14,6 @@ const emit = defineEmits(['close'])
 const localOpen = ref(props.isOpen)
 const selectedToilet = ref<typeof props.toilets[0] | null>(null)
 
-// watch selectedToilet and log
-watch(selectedToilet, (val) => {
-  console.log('selectedToilet changed:', val)
-})
-
 watch(() => props.isOpen, val => {
   localOpen.value = val
 })
