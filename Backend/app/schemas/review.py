@@ -15,6 +15,6 @@ class ReviewUpdate(BaseModel):
     rating: Optional[int] = None
 
 class ReviewOut(ReviewBase):
-    id: int
+    review_id: int
     class Config:
         orm_mode = True
