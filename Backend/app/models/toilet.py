@@ -17,3 +17,6 @@ class Toilet(Base):
     
     # 建立與Favorite的一對多關係
     favorites = relationship("Favorite", back_populates="toilet")
+
+    # 建立與 Review 的一對多關係
+    reviews = relationship("Review", back_populates="toilet")
