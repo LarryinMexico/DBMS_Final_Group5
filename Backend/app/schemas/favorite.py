@@ -10,4 +10,5 @@ class FavoriteAdd(BaseModel):
     toilet_id: int
 
 class FavoriteDel(BaseModel):
-    id: int
+    user_id: int
+    toilet_id: int

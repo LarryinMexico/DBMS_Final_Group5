@@ -21,10 +21,11 @@ def add_favorite(
     if crud_favorite.add_toilet(db, user.user_id, user.toilet_id) == "Toilet added sucessfully":
         return {"message": "Toilet added sucessfully"}
 
-@router.delete("/delete/{id}")
+@router.delete("/delete")
 def del_favorite(
-    id: int,
+    user: favorite_schema.FavoriteDel,
     db: Session = Depends(get_db)
 ):
-    if crud_favorite.del_toilet(db, id) == "Toilet deleted sucessfully":
-        return {"message": "Toilet deleted sucessfully"}
+    if crud_favorite.del_toilet(db, user.user_id, user.toilet_id):
+        return {"message": "Toilet deleted successfully"}
+    raise HTTPException(status_code=404, detail="Favorite not found")

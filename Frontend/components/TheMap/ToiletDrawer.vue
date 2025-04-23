@@ -5,7 +5,7 @@ import ToiletDetail from './ToiletDetail.vue'
 
 const props = defineProps<{
   buildingName: string
-  toilets: Array<{ id: string; floor: string | number; type: string; title?: string }>
+  toilets: Array<{ id: number; floor: string | number; type: string; title?: string }>
   isOpen: boolean
 }>()
 
@@ -74,7 +74,7 @@ function backToList() {
         <ToiletCardList v-if="!selectedToilet" :toilets="toilets" @select="(toilet) => (selectedToilet = toilet)" />
 
         <!-- 詳細頁面 -->
-        <ToiletDetail v-else :toilet="selectedToilet" />
+        <ToiletDetail v-else :toilet="{ ...selectedToilet, id: String(selectedToilet.id) }" />
       </div>
     </template>
   </UDrawer>
