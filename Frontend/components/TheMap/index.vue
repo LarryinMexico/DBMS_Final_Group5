@@ -2,12 +2,16 @@
 import mapboxgl from 'mapbox-gl'
 import { onMounted, ref, watch } from 'vue'
 import { useBuildingStore } from '~/stores/building'
+import ToiletDrawer from './ToiletDrawer.vue'
 
 const colorMode = useColorMode()
 const buildingStore = useBuildingStore()
 
 const mapContainer = ref<HTMLElement | null>(null)
 const mapInstance = ref<mapboxgl.Map | null>(null)
+
+const drawerOpen = ref(false)
+const selectedBuilding = ref<{ name: string; toilets: any[] } | null>(null)
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiY2h1YW5nMDkxIiwiYSI6ImNtOTE3NTZldzB2cWYyanNraGh1dGkzdzMifQ.IqUIwZ1dEf7Prbnb4bMeng'
 
@@ -18,8 +22,7 @@ const getMapStyle = () => {
     : 'mapbox://styles/mapbox/streets-v12'
 }
 
-// ✅ 渲染建築 Marker
-function renderBuildingMarkers() {
+async function renderBuildingMarkers() {
   if (!mapInstance.value) return
 
   buildingStore.buildings.forEach((building: any) => {
@@ -29,11 +32,24 @@ function renderBuildingMarkers() {
     el.style.height = '12px'
     el.style.backgroundColor = '#3b82f6'
     el.style.borderRadius = '50%'
-    
+    el.style.cursor = 'pointer'
+
+    // 👇 在點擊時才去 fetch 廁所資料與打開 drawer
+    el.addEventListener('click', async () => {
+      console.log('clicked', building.name)
+      const toiletsRes = await fetch(`https://toilet-api-347656239330.asia-east1.run.app/api/toilets/building/${building.id}`)
+      const toilets = await toiletsRes.json()
+
+      selectedBuilding.value = {
+        name: building.name,
+        toilets
+      }
+      drawerOpen.value = true
+    })
+
     new mapboxgl.Marker(el)
       .setLngLat([building.lng, building.lat])
-      .setPopup(new mapboxgl.Popup().setText(building.name))
-      .addTo(mapInstance.value as any)
+      .addTo(mapInstance.value! as any)
   })
 }
 
@@ -69,6 +85,15 @@ watch(colorMode, () => {
 </script>
 
 <template>
+    <ToiletDrawer
+    v-if="selectedBuilding"
+    v-model:open="drawerOpen"
+    :isOpen="drawerOpen"
+    :overlay="false"
+    :buildingName="selectedBuilding.name"
+    :toilets="selectedBuilding.toilets"
+    @close="drawerOpen = false"
+  />
   <div ref="mapContainer" class="w-full h-[calc(100vh-4rem)]" />
 </template>
 

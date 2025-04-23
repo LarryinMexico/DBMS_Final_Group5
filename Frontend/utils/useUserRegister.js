@@ -2,10 +2,12 @@
 import { watch } from 'vue'
 import { useUser, useAuth } from '@clerk/vue'
 import { BASE_URL } from '@/constants'
+import { useUserStore } from '@/stores/userStore'
 
 export function useUserRegister() {
   const { user } = useUser()
   const { getToken, isSignedIn } = useAuth()
+  const userStore = useUserStore()
 
   watch(user, async (newUser) => {
     if (!newUser || !isSignedIn.value) return
@@ -39,10 +41,10 @@ export function useUserRegister() {
         })
 
         if (!postRes.ok) throw new Error('無法註冊使用者')
-        console.log('✅ 已成功註冊')
+        userStore.setUser(userData) // ✅ 註冊後儲存
       } else if (res.ok) {
         const userData = await res.json()
-        console.log('👤 目前使用者：', userData)
+        userStore.setUser(userData) // ✅ 已存在的用戶也存入
       } else {
         throw new Error(`❌ 無法取得使用者資料，狀態碼 ${res.status}`)
       }
