@@ -25,7 +25,6 @@ export function useUserRegister() {
 
       if (res.status === 404) {
         // 尚未註冊，執行 POST 註冊
-        console.log('🆕 尚未註冊，用戶 ID:', newUser.id)
 
         const postRes = await fetch(`${BASE_URL}/users/`, {
           method: 'POST',
@@ -36,15 +35,18 @@ export function useUserRegister() {
           body: JSON.stringify({
             clerk_id: newUser.id,
             name: newUser.fullName,
-            email: newUser.primaryEmailAddress?.emailAddress
+            email: newUser.primaryEmailAddress?.emailAddress,
+            avatarUrl: newUser.imageUrl
           })
         })
 
         if (!postRes.ok) throw new Error('無法註冊使用者')
-        userStore.setUser(userData) // ✅ 註冊後儲存
+        
+        const userData = await postRes.json()
+        userStore.setUser({ ...userData, avatar: newUser.imageUrl })
       } else if (res.ok) {
         const userData = await res.json()
-        userStore.setUser(userData) // ✅ 已存在的用戶也存入
+        userStore.setUser({ ...userData, avatar: user.value.imageUrl })
       } else {
         throw new Error(`❌ 無法取得使用者資料，狀態碼 ${res.status}`)
       }
