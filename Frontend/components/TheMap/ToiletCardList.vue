@@ -12,6 +12,8 @@ const emit = defineEmits(['select'])
 
 const favorites = ref<Set<number>>(new Set()) // 簡易紀錄收藏狀態
 
+  const isLoading = ref(true)
+
 onMounted(async () => {
   const userId = userStore?.id
   if (!userId) return
@@ -25,6 +27,8 @@ onMounted(async () => {
     favorites.value = new Set(ids)
   } catch (error) {
     console.error('❌ 無法載入最愛列表', error)
+  } finally {
+    isLoading.value = false
   }
 })
 
@@ -68,7 +72,7 @@ const toggleFavorite = async (toiletId: number) => {
       v-for="(toilet, index) in toilets"
       :key="index"
       class="border border-gray-200 dark:border-gray-700 p-4"
-      @click.self="emit('select', toilet)"
+      @click="emit('select', toilet)"
     >
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-base font-bold">
@@ -87,12 +91,22 @@ const toggleFavorite = async (toiletId: number) => {
           <span>10 則</span>
         </div>
         <UButton
+          v-if="!isLoading"
           :label="favorites.has(toilet.id) ? '已加入' : '我的最愛'"
           :color="favorites.has(toilet.id) ? 'success' : 'error'"
           variant="soft"
           icon="i-heroicons-heart"
           size="xs"
           @click.stop="toggleFavorite(toilet.id)"
+        />
+
+        <!-- Loading 狀態下顯示 Skeleton -->
+        <UButton
+          v-else
+          loading
+          variant="soft"
+          color="neutral"
+          size="xs"
         />
       </div>
     </UCard>
