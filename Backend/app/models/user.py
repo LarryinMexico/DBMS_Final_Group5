@@ -18,3 +18,6 @@ class User(Base):
     # 建立與Review的一對多關係
     reviews = relationship("Review", back_populates="user")
 
+    # 建立與 Reaction 的一對多關係
+    reactions = relationship("Reaction", back_populates="user") 
+

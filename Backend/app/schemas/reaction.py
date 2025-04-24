@@ -12,7 +12,9 @@ class ReactionBase(BaseModel):
 class ReactionCreate(ReactionBase):
     pass
 
-class ReactionUpdate(ReactionBase):
+class ReactionUpdate(BaseModel):
+    review_id: Optional[int]
+    user_id: Optional[int]
     is_liked: Optional[bool] = None
 
 class ReactionOut(ReactionBase):

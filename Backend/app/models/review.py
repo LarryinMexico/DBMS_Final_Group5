@@ -4,7 +4,8 @@ from app.db.base import Base
 
 class Review(Base):
     __tablename__ = "review"
-    id = Column(Integer, primary_key=True, index=True) #will auto increment by itself
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     toilet_id = Column(Integer, ForeignKey("toilet.id"), nullable=False)
     rating = Column(Integer, nullable=False)
@@ -18,4 +19,7 @@ class Review(Base):
     
     # 建立與Toilet的多對一關係
     toilet = relationship("Toilet", back_populates="reviews")
+
+    # 建立與reaction的多對一關係
+    reactions = relationship("Reaction", back_populates="review") 
 

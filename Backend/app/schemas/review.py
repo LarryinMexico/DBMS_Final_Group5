@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 class ReviewBase(BaseModel):
-    id: Optional[int] = None #auto add by database
+    #id: Optional[int] = None #auto add by database
     user_id: int
     toilet_id: int
     rating: int

@@ -5,7 +5,7 @@ from app.db.base import Base
 class Reaction(Base):
     __tablename__ = "reaction"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     review_id = Column(Integer, ForeignKey("review.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     is_liked = Column(Boolean, default=False)
