@@ -1,44 +1,81 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
+
 from app.schemas import reaction as reaction_schemas
 from app.CRUD import reaction as reaction_crud
 from app.db.session import get_db
-from typing import List
 
 router = APIRouter()
 
-# 新增 reaction
-@router.post("/reactions/", response_model=reaction_schemas.ReactionOut)
-def create_reaction(reaction_in: reaction_schemas.ReactionCreate, db: Session = Depends(get_db)):
+
+@router.post("/", response_model=reaction_schemas.ReactionOut)
+def create_reaction(
+    reaction_in: reaction_schemas.ReactionCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    建立新的 Reaction。
+
+    - **user_id**: 使用者 ID
+    - **review_id**: 所屬評論 ID
+    """
     return reaction_crud.create_reaction(db=db, reaction=reaction_in)
 
-# 查詢 reaction by ID
-@router.get("/reactions/{reaction_id}", response_model=reaction_schemas.ReactionOut)
-def get_reaction(reaction_id: int, db: Session = Depends(get_db)):
-    db_reaction = reaction_crud.get_per_reaction(db=db, reaction_id=reaction_id)
-    return db_reaction
 
-# 查詢 reactions by review ID
-@router.get("/reviews/{review_id}/reactions/", response_model=List[reaction_schemas.ReactionOut])
-def get_review_reactions(review_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return reaction_crud.get_multi_by_review(db=db, review_id=review_id, skip=skip, limit=limit)
-
-# 查詢 reactions by user ID
-@router.get("/users/{user_id}/reactions/", response_model=List[reaction_schemas.ReactionOut])
-def get_user_reactions(user_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return reaction_crud.get_multi_by_user(db=db, user_id=user_id, skip=skip, limit=limit)
-
-# 修改 reaction by ID
-@router.put("/reactions/{reaction_id}", response_model=reaction_schemas.ReactionOut)
-def update_reaction(reaction_id: int, reaction_in: reaction_schemas.ReactionUpdate, db: Session = Depends(get_db)):
+@router.get("/{reaction_id}", response_model=reaction_schemas.ReactionOut)
+def get_reaction(
+    reaction_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    根據 reaction ID 取得單一 reaction。
+    """
     db_reaction = reaction_crud.get_per_reaction(db=db, reaction_id=reaction_id)
     if not db_reaction:
-        return False
-    return reaction_crud.update_reaction(db=db, reaction=db_reaction, reaction_update=reaction_in)
+        raise HTTPException(status_code=404, detail="Reaction not found")
+    return db_reaction
 
-# 刪除 reaction by ID
-@router.delete("/reactions/{reaction_id}")
-def delete_reaction(reaction_id: int, db: Session = Depends(get_db)):
-    if not reaction_crud.delete_reaction(db=db, reaction_id=reaction_id):
-        return False
-    return True
+
+@router.get("/review/{review_id}", response_model=List[reaction_schemas.ReactionOut])
+def get_review_reactions(
+    review_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """
+    根據評論 ID 查詢所有 reactions。
+
+    - 可設定 `skip` 與 `limit` 分頁查詢
+    """
+    return reaction_crud.get_multi_by_review(db=db, review_id=review_id, skip=skip, limit=limit)
+
+
+@router.get("/user/{user_id}", response_model=List[reaction_schemas.ReactionOut])
+def get_user_reactions(
+    user_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """
+    根據使用者 ID 查詢其所有 reactions。
+
+    - 可設定 `skip` 與 `limit` 分頁查詢
+    """
+    return reaction_crud.get_multi_by_user(db=db, user_id=user_id, skip=skip, limit=limit)
+
+
+@router.delete("/{reaction_id}")
+def delete_reaction(
+    reaction_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    根據 reaction ID 刪除 reaction。
+    """
+    success = reaction_crud.delete_reaction(db=db, reaction_id=reaction_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Reaction not found or already deleted")
+    return {"message": "Reaction deleted successfully"}

@@ -28,3 +28,11 @@ class ReviewOut(ReviewBase):
     updateAt: datetime
     class Config:
         orm_mode = True
+
+class ReviewStat(BaseModel):
+    toilet_id: int
+    avg_rating: float
+    count: int
+
+    class Config:
+        orm_mode = True

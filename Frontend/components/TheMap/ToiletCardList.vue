@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useToast } from '#imports'
 import { BASE_URL } from '@/constants/index.js'
 import { useUserStore } from '@/stores/userStore.js'
@@ -10,11 +9,12 @@ defineProps<{
 
 const emit = defineEmits(['select'])
 
-const favorites = ref<Set<number>>(new Set()) // 簡易紀錄收藏狀態
+const favorites = ref<Set<number>>(new Set())
+const stats = ref<Record<number, { avg_rating: number; count: number }>>({})
 
-  const isLoading = ref(true)
+const isLoading = ref(true)
 
-onMounted(async () => {
+const fetchFavorites = async () => {
   const userId = userStore?.id
   if (!userId) return
 
@@ -27,20 +27,35 @@ onMounted(async () => {
     favorites.value = new Set(ids)
   } catch (error) {
     console.error('❌ 無法載入最愛列表', error)
-  } finally {
-    isLoading.value = false
   }
+}
+
+const fetchStats = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/reviews/stats`)
+    if (!res.ok) throw new Error('取得評論統計失敗')
+
+    const data = await res.json()
+    stats.value = Object.fromEntries(
+      data.map((item: any) => [item.toilet_id, { avg_rating: item.avg_rating, count: item.count }])
+    )
+  } catch (err) {
+    console.error('❌ 無法取得 stats', err)
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([fetchFavorites(), fetchStats()])
+  isLoading.value = false
 })
 
 const userStore = useUserStore()
 
 const toggleFavorite = async (toiletId: number) => {
   const userId = userStore?.id
-
   if (!userId) return
 
   const toast = useToast()
-
   const isFavorited = favorites.value.has(toiletId)
   const method = isFavorited ? 'DELETE' : 'POST'
   const endpoint = `${BASE_URL}/favorites/${isFavorited ? 'delete' : 'add'}`
@@ -84,12 +99,19 @@ const toggleFavorite = async (toiletId: number) => {
       <div class="flex items-center space-x-4 text-sm text-red-500">
         <div class="flex items-center space-x-1">
           <UIcon name="i-heroicons-star-solid" />
-          <span>5.0</span>
+          <span>
+            {{
+              stats[toilet.id]?.avg_rating
+                ? stats[toilet.id].avg_rating.toFixed(1)
+                : '尚無評分'
+            }}
+          </span>
         </div>
         <div class="flex items-center space-x-1">
           <UIcon name="i-heroicons-chat-bubble-left-right" />
-          <span>10 則</span>
+          <span>{{ stats[toilet.id]?.count || 0 }} 則</span>
         </div>
+
         <UButton
           v-if="!isLoading"
           :label="favorites.has(toilet.id) ? '已加入' : '我的最愛'"
@@ -100,7 +122,6 @@ const toggleFavorite = async (toiletId: number) => {
           @click.stop="toggleFavorite(toilet.id)"
         />
 
-        <!-- Loading 狀態下顯示 Skeleton -->
         <UButton
           v-else
           loading

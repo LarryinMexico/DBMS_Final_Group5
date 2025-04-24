@@ -9,7 +9,7 @@ class Review(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     toilet_id = Column(Integer, ForeignKey("toilet.id"), nullable=False)
     rating = Column(Integer, nullable=False)
-    comment = Column(String, nullable=True)
+    comment = Column(String(255), nullable=True)
     createAt = Column(DateTime, default=func.now(), nullable=False)
     updateAt = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 

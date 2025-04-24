@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.CRUD import user as crud_user
 from app.schemas import user as user_schema
+from app.models import user as models
 from app.db.session import get_db
 from app.db.security import verify_jwt  # Clerk JWT 驗證
 
@@ -33,6 +34,7 @@ async def register_user(
             clerk_id=clerk_id,
             name=user_data.name,
             email=user_data.email,
+            avatarUrl=user_data.avatarUrl,
         )
     )
 
@@ -57,3 +59,13 @@ def list_users(db: Session = Depends(get_db)):
     🔍 顯示所有使用者（測試用）
     """
     return crud_user.get_all_users(db)
+
+@router.get("/{id}")
+def get_user(id: int, db: Session = Depends(get_db)):
+    """ 
+    取得單一使用者資訊
+    """
+    user = db.query(models.User).filter(models.User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
