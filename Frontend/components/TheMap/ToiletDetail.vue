@@ -24,8 +24,8 @@ const submitReview = async () => {
       body: JSON.stringify({
         user_id: user.id,
         toilet_id: props.toilet.id,
-        rating: rating.value
-        // comment 未送出
+        rating: rating.value,
+        comment: comment.value
       })
     })
 
@@ -43,7 +43,7 @@ const submitReview = async () => {
   await fetchReviews() // POST 成功後立即重新拉取評論
 }
 
-const reviews = ref<{ user_id: number; rating: number; review_id: number }[]>([])
+const reviews = ref<{ user_id: number; rating: number; review_id: number, comment: string ; updateAt: Date ; isOwner: boolean}[]>([])
 
 const userInfoMap = ref<Record<number, { name: string; avatarUrl: string }>>({})
 
@@ -66,15 +66,21 @@ const fetchReviews = async () => {
     const res = await fetch(`${BASE_URL}/reviews/toilet/${props.toilet.id}`)
     if (!res.ok) throw new Error('無法取得評論')
     const fetched = await res.json()
-    reviews.value = fetched
-    for (const review of fetched) {
+    reviews.value = fetched.map((review: { user_id: number | null; }) => {
+      if (review.user_id && !userInfoMap.value[review.user_id]) {
       fetchUserInfo(review.user_id)
-    }
+      }
+      return {
+      ...review,
+      isOwner: review.user_id === user.id
+      }
+    })
+
+    console.log('✅ 評論載入成功', reviews.value)
   } catch (err) {
     console.error('❌ 評論載入失敗', err)
   }
 }
-
 onMounted(fetchReviews)
 </script>
 
@@ -137,10 +143,29 @@ onMounted(fetchReviews)
               class="w-4 h-4"
             />
           </div>
+          <!-- 如果是自己就顯示操作選單 -->
+          <UButton
+            v-if="review.isOwner"
+            icon="i-heroicons-ellipsis-horizontal"
+            color="neutral"
+            variant="ghost"
+          />
+
+          <!-- 否則顯示愛心 reaction -->
+          <UButton
+            v-else
+            icon="i-heroicons-heart"
+            :variant="true ? 'solid' : 'ghost'"
+            color="error"
+            @click="console.log('點擊愛心')"
+          />
+
         </div>
         <p class="text-sm text-gray-600 mt-1">
-          {{ '（尚無評論內容）' }}
+          {{ review.comment || '無評論內容' }}
         </p>
+
+        <p>{{ review.updateAt }}</p>
       </div>
     </div>
 
