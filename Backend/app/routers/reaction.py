@@ -37,7 +37,7 @@ def update_reaction(reaction_id: int, reaction_in: reaction_schemas.ReactionUpda
     return reaction_crud.update_reaction(db=db, reaction=db_reaction, reaction_update=reaction_in)
 
 # 刪除 reaction by ID
-@router.delete("/reactions/{reaction_id}", response_model=dict)
+@router.delete("/reactions/{reaction_id}")
 def delete_reaction(reaction_id: int, db: Session = Depends(get_db)):
     if not reaction_crud.delete_reaction(db=db, reaction_id=reaction_id):
         return False
