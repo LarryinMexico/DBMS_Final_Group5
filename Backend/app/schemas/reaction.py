@@ -14,9 +14,8 @@ class ReactionCreate(ReactionBase):
 
 class ReactionUpdate(ReactionBase):
     is_liked: Optional[bool] = None
-    #reaction_time auto update by database
 
-class Reaction(ReactionBase):
+class ReactionOut(ReactionBase):
     id: int
     reaction_time: datetime
 
