@@ -5,3 +5,4 @@ from app.models.toilet import Toilet
 from app.models.building import Building
 from app.models.favorite import Favorite
 from app.models.review import Review
+from app.models.reaction import Reaction
