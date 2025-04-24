@@ -3,6 +3,9 @@ from sqlalchemy.orm import Session
 from app.schemas import review as review_schemas
 from app.CRUD import review as review_crud
 from app.db.session import get_db
+from app.models.review import Review
+from typing import List
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -34,3 +37,27 @@ def get_reviews_by_user(user_id: int, db: Session=Depends(get_db)):
 @router.get("/toilet/{toilet_id}",response_model=list[review_schemas.ReviewOut])
 def get_review_by_toilet(toilet_id: int, db: Session=Depends(get_db)):
     return review_crud.get_review_by_toilet(db,toilet_id)
+
+@router.get("/stats", response_model=List[review_schemas.ReviewStat])
+def get_review_stats(db: Session = Depends(get_db)):
+    """
+    取得每個廁所的平均評分與評論數量。
+    """
+    results = (
+        db.query(
+            Review.toilet_id,
+            func.avg(Review.rating).label("avg_rating"),
+            func.count(Review.id).label("count")
+        )
+        .group_by(Review.toilet_id)
+        .all()
+    )
+
+    return [
+        {
+            "toilet_id": row.toilet_id,
+            "avg_rating": round(row.avg_rating, 1),
+            "count": row.count
+        }
+        for row in results
+    ]
