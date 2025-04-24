@@ -9,7 +9,8 @@ class Reaction(Base):
     review_id = Column(Integer, ForeignKey("review.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     is_liked = Column(Boolean, default=False)
-    reaction_time = Column(DateTime, default=func.now())
+    #reaction time will update everytime the user change the is_liked status
+    reaction_time = Column(DateTime, default=func.now(), onupdate=func.now())
 
     review = relationship("Review", back_populates="reactions")
     user = relationship("User", back_populates="reactions")
