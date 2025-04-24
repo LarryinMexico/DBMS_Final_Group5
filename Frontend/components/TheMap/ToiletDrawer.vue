@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import ToiletCardList from './ToiletCardList.vue'
-import ToiletDetail from './ToiletDetail.vue'
+import Review from './Review/index.vue'
 
 const props = defineProps<{
   buildingName: string
@@ -69,7 +69,7 @@ function backToList() {
         <ToiletCardList v-if="!selectedToilet" :toilets="toilets" @select="(toilet) => (selectedToilet = toilet)" />
 
         <!-- 詳細頁面 -->
-        <ToiletDetail v-else :toilet="{ ...selectedToilet, id: String(selectedToilet.id) }" />
+        <Review v-else :toilet="{ ...selectedToilet, id: selectedToilet.id }" />
       </div>
     </template>
   </UDrawer>
