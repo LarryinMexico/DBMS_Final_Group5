@@ -12,6 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from app.models.toilet import Toilet
 from app.models.building import Building
 from app.db.base import Base
+from app.models.review import Review
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

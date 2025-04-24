@@ -12,7 +12,7 @@ def create_review(db: Session, review: schemas.ReviewCreate):
 
 #修改 review
 def update_review(db: Session, review_id: int, review_update: schemas.ReviewUpdate):
-    review_old = db.query(models.Review).filter(models.Review.review_id == review_id).first()
+    review_old = db.query(models.Review).filter(models.Review.id == review_id).first()
     if review_old is None:
         return False
     
@@ -26,7 +26,7 @@ def update_review(db: Session, review_id: int, review_update: schemas.ReviewUpda
 
 #刪除 review
 def delete_review(db: Session, review_id: int):
-    review = db.query(models.Review).filter(models.Review.review_id == review_id).first()
+    review = db.query(models.Review).filter(models.Review.id == review_id).first()
     if review is None:
         return False
     db.delete(review)

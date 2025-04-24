@@ -1,13 +1,17 @@
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, func
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
 class Review(Base):
     __tablename__ = "review"
-    review_id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True) #will auto increment by itself
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     toilet_id = Column(Integer, ForeignKey("toilet.id"), nullable=False)
     rating = Column(Integer, nullable=False)
+    comment = Column(String, nullable=True)
+    createAt = Column(DateTime, default=func.now(), nullable=False)
+    updateAt = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
 
     # 建立與User的多對一關係
     user = relationship("User", back_populates="reviews")
