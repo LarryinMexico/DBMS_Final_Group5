@@ -8,7 +8,7 @@ class Report(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     toilet_id = Column(Integer, ForeignKey("toilet.id"), nullable=False)
-    IssueDescription = Column(String(255), nullable=False)
+    description = Column(String(255), nullable=False)
 
     # 建立與User的多對一關係
     user = relationship("User", back_populates="reports")
