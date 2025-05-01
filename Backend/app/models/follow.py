@@ -11,7 +11,7 @@ class Follow(Base):
     followed_id = Column(Integer, ForeignKey("users.id"))
     follow_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-     # 跟 user 建立關聯（追蹤別人的人）
+    # 跟 user 建立關聯（追蹤別人的人）
     following = relationship("User", foreign_keys=[following_id], back_populates="following_relations")
 
     # 跟 user 建立關聯（被追蹤的人）
