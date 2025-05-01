@@ -21,7 +21,7 @@ def create_follow(follow: follow_schemas.FollowCreate, db: Session = Depends(get
     return follow_crud.create_follow(db, follow)
 
 #取消追蹤
-@router.delete("/", status_code=204)
+@router.delete("/{follower_id}/{followed_id}", status_code=204)
 def unfollow(follower_id: int, followed_id: int, db: Session = Depends(get_db)):
     follow = follow_crud.unfollow(db, followed_id=followed_id, following_id=follower_id)
     if not follow:

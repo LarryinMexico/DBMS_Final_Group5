@@ -14,11 +14,11 @@ def create_follow(db: Session, follow: schemas.FollowCreate):
 
 #查詢追蹤的人的清單
 def get_following_user(db: Session, following_id: int):
-    return db.query(models.Follow).filter(models.Follow.id == following_id).all()
+    return db.query(models.Follow).filter(models.Follow.following_id == following_id).all()
 
 #查詢被誰追蹤的清單
 def get_follower(db: Session, followed_id: int):
-    return db.query(models.Follow).filter(models.Follow.id == followed_id).all()
+    return db.query(models.Follow).filter(models.Follow.followed_id == followed_id).all()
 
 #取消追蹤
 def unfollow(db: Session, followed_id: int, following_id: int):
