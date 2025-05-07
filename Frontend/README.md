@@ -18,7 +18,7 @@
 ├── nuxt.config.ts                    # ⚙️ Nuxt 設定檔（包含 module、plugin 等）
 ├── package-lock.json                 # 🔒 npm 鎖定檔，記錄精確套件版本
 ├── package.json                      # 📦 套件管理與 script 定義
-├── pages                             
+├── pages
 │   └── index.vue                     # 🏠 頁面主入口（自動路由為 `/`）
 ├── server
 │   └── tsconfig.json                 # Server 專用 TypeScript 設定檔（若有 server function）
@@ -60,7 +60,7 @@
 
    ```vue
    <script setup>
-   import MyComponent from '@/components/MyComponent/index.vue'
+   import MyComponent from "@/components/MyComponent/index.vue";
    </script>
 
    <template>

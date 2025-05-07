@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ColorModeButton from './ColorModeButton.vue';
-import AddToiletButton from './AddToiletButton.vue';
+import ColorModeButton from "./ColorModeButton.vue";
+import AddToiletButton from "./AddToiletButton.vue";
 </script>
 
 <template>
@@ -20,12 +20,19 @@ import AddToiletButton from './AddToiletButton.vue';
 
       <!-- 登入按鈕-->
       <SignedOut>
-        <SignInButton mode="modal" afterSignInUrl="/" :appearance="{
-          elements: {
-            button: 'bg-green-500 hover:bg-green-600 text-white rounded px-3 py-2'
-          }
-        }">
-          <UButton color="secondary" variant="soft" icon="i-lucide-user">登入</UButton>
+        <SignInButton
+          mode="modal"
+          afterSignInUrl="/"
+          :appearance="{
+            elements: {
+              button:
+                'bg-green-500 hover:bg-green-600 text-white rounded px-3 py-2',
+            },
+          }"
+        >
+          <UButton color="secondary" variant="soft" icon="i-lucide-user"
+            >登入</UButton
+          >
         </SignInButton>
       </SignedOut>
       <SignedIn>

@@ -1,84 +1,92 @@
 <script setup lang="ts">
-import { useToast } from '#imports'
-import { BASE_URL } from '@/constants/index.js'
-import { useUserStore } from '@/stores/userStore.js'
+import { useToast } from "#imports";
+import { BASE_URL } from "@/constants/index.js";
+import { useUserStore } from "@/stores/userStore.js";
 
 defineProps<{
-  toilets: Array<{ id: number; floor: string | number; type: string; title?: string }>
-}>()
+  toilets: Array<{
+    id: number;
+    floor: string | number;
+    type: string;
+    title?: string;
+  }>;
+}>();
 
-const emit = defineEmits(['select'])
+const emit = defineEmits(["select"]);
 
-const favorites = ref<Set<number>>(new Set())
-const stats = ref<Record<number, { avg_rating: number; count: number }>>({})
+const favorites = ref<Set<number>>(new Set());
+const stats = ref<Record<number, { avg_rating: number; count: number }>>({});
 
-const isLoading = ref(true)
+const isLoading = ref(true);
 
 const fetchFavorites = async () => {
-  const userId = userStore?.id
-  if (!userId) return
+  const userId = userStore?.id;
+  if (!userId) return;
 
   try {
-    const res = await fetch(`${BASE_URL}/favorites/list/${userId}`)
-    if (!res.ok) throw new Error('取得最愛失敗')
+    const res = await fetch(`${BASE_URL}/favorites/list/${userId}`);
+    if (!res.ok) throw new Error("取得最愛失敗");
 
-    const data = await res.json()
-    const ids = data.map((item: { toilet_id: number }) => item.toilet_id)
-    favorites.value = new Set(ids)
+    const data = await res.json();
+    const ids = data.map((item: { toilet_id: number }) => item.toilet_id);
+    favorites.value = new Set(ids);
   } catch (error) {
-    console.error('❌ 無法載入最愛列表', error)
+    console.error("❌ 無法載入最愛列表", error);
   }
-}
+};
 
 const fetchStats = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/reviews/stats`)
-    if (!res.ok) throw new Error('取得評論統計失敗')
+    const res = await fetch(`${BASE_URL}/reviews/stats`);
+    if (!res.ok) throw new Error("取得評論統計失敗");
 
-    const data = await res.json()
+    const data = await res.json();
     stats.value = Object.fromEntries(
-      data.map((item: any) => [item.toilet_id, { avg_rating: item.avg_rating, count: item.count }])
-    )
+      data.map((item: any) => [
+        item.toilet_id,
+        { avg_rating: item.avg_rating, count: item.count },
+      ]),
+    );
   } catch (err) {
-    console.error('❌ 無法取得 stats', err)
+    console.error("❌ 無法取得 stats", err);
   }
-}
+};
 
 onMounted(async () => {
-  await Promise.all([fetchFavorites(), fetchStats()])
-  isLoading.value = false
-})
+  await Promise.all([fetchFavorites(), fetchStats()]);
+  isLoading.value = false;
+});
 
-const userStore = useUserStore()
+const userStore = useUserStore();
 
 const toggleFavorite = async (toiletId: number) => {
-  const userId = userStore?.id
-  if (!userId) return
+  const userId = userStore?.id;
+  if (!userId) return;
 
-  const toast = useToast()
-  const isFavorited = favorites.value.has(toiletId)
-  const method = isFavorited ? 'DELETE' : 'POST'
-  const endpoint = `${BASE_URL}/favorites/${isFavorited ? 'delete' : 'add'}`
-  const payload = JSON.stringify({ user_id: userId, toilet_id: toiletId })
+  const toast = useToast();
+  const isFavorited = favorites.value.has(toiletId);
+  const method = isFavorited ? "DELETE" : "POST";
+  const endpoint = `${BASE_URL}/favorites/${isFavorited ? "delete" : "add"}`;
+  const payload = JSON.stringify({ user_id: userId, toilet_id: toiletId });
 
   const res = await fetch(endpoint, {
     method,
-    headers: { 'Content-Type': 'application/json' },
-    body: payload
-  })
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+  });
 
   if (res.ok) {
     if (isFavorited) {
-      favorites.value.delete(toiletId)
-      toast.add({ title: '已移除最愛', color: 'error' })
+      favorites.value.delete(toiletId);
+      toast.add({ title: "已移除最愛", color: "error" });
     } else {
-      favorites.value.add(toiletId)
-      toast.add({ title: '成功加入最愛', color: 'success' })
+      favorites.value.add(toiletId);
+      toast.add({ title: "成功加入最愛", color: "success" });
     }
   } else {
-    toast.add({ title: '操作失敗', description: '請稍後再試', color: 'error' })
+    toast.add({ title: "操作失敗", description: "請稍後再試", color: "error" });
   }
-}
+};
 </script>
 
 <template>
@@ -91,8 +99,10 @@ const toggleFavorite = async (toiletId: number) => {
     >
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-base font-bold">
-          {{ toilet.title || '無名稱' }}
-          <span class="text-sm text-gray-400 ml-1">📍{{ toilet.floor }} 樓</span>
+          {{ toilet.title || "無名稱" }}
+          <span class="text-sm text-gray-400 ml-1"
+            >📍{{ toilet.floor }} 樓</span
+          >
         </h3>
       </div>
 
@@ -103,7 +113,7 @@ const toggleFavorite = async (toiletId: number) => {
             {{
               stats[toilet.id]?.avg_rating
                 ? stats[toilet.id].avg_rating.toFixed(1)
-                : '尚無評分'
+                : "尚無評分"
             }}
           </span>
         </div>
@@ -122,13 +132,7 @@ const toggleFavorite = async (toiletId: number) => {
           @click.stop="toggleFavorite(toilet.id)"
         />
 
-        <UButton
-          v-else
-          loading
-          variant="soft"
-          color="neutral"
-          size="xs"
-        />
+        <UButton v-else loading variant="soft" color="neutral" size="xs" />
       </div>
     </UCard>
 
