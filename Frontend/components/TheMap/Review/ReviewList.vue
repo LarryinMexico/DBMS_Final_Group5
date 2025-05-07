@@ -68,16 +68,74 @@ const deleteReview = async (reviewId: number) => {
 };
 
 watch(() => props.reload, fetchReviews);
+
+const sortKey = ref<"time" | "rating" | "popularity">("time");
+const sortOrder = ref<"asc" | "desc">("desc");
+
+const sortedReviews = computed(() => {
+  const sorted = [...reviews.value].sort((a, b) => {
+    let result = 0;
+
+    if (sortKey.value === "time") {
+      result =
+        new Date(a.updateAt).getTime() - new Date(b.updateAt).getTime();
+    } else if (sortKey.value === "rating") {
+      result = a.rating - b.rating;
+    } else if (sortKey.value === "popularity") {
+      result =
+        reactionCount(a.id) - reactionCount(b.id); // 多的在前（先設為 desc）
+    }
+
+    return sortOrder.value === "asc" ? result : -result;
+  });
+  return sorted;
+});
+
 </script>
 
 <template>
   <div class="space-y-3 mt-4">
+  <!-- 排序按鈕區 -->
+  <div class="flex justify-between items-center gap-2 mb-2">
+    <!-- 排序條件切換（時間 / 評分） -->
+    <UButtonGroup size="sm">
+      <UButton
+        :variant="sortKey === 'time' ? 'solid' : 'ghost'"
+        @click="sortKey = 'time'"
+        icon="i-heroicons-clock"
+        label="時間"
+      />
+      <UButton
+        :variant="sortKey === 'rating' ? 'solid' : 'ghost'"
+        @click="sortKey = 'rating'"
+        icon="i-heroicons-star"
+        label="評分"
+      />
+      <UButton
+        :variant="sortKey === 'popularity' ? 'solid' : 'ghost'"
+        @click="sortKey = 'popularity'"
+        label="熱門"
+        icon="i-heroicons-fire"
+        size="sm"
+      />
+    </UButtonGroup>
+
+    <!-- 排序方向切換（遞增 / 遞減） -->
+    <UButton
+      :label="sortOrder === 'asc' ? '低到高' : '高到低'"
+      size="sm"
+      @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+      :icon="sortOrder === 'asc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'"
+      variant="ghost"
+    />
+  </div>
+
     <div
-      v-for="review in reviews"
+      v-for="review in sortedReviews"
       :key="review.id"
       class="flex items-start space-x-3"
     >
-      <UAvatar size="sm" :src="userInfoMap[review.user_id]?.avatarUrl" />
+      <UAvatar size="sm" :src="userInfoMap[review.user_id]?.avatarUrl" class="mt-3" />
 
       <div class="flex flex-col w-full">
         <div class="flex items-center justify-between">
