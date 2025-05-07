@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useToast } from "#imports";
 import { BASE_URL } from "@/constants/index.js";
-import { useUserStore } from "@/stores/userStore.js";
+import { useUserStore } from "@/stores/user";
 
 defineProps<{
   toilets: Array<{

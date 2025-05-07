@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { BASE_URL } from "@/constants";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/user";
 
 interface Review {
   id: number;

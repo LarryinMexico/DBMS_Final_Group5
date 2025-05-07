@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { BASE_URL } from "@/constants";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/user";
 
 const props = defineProps<{ toiletId: number }>();
 const emit = defineEmits<{ (e: "submitted"): void }>();

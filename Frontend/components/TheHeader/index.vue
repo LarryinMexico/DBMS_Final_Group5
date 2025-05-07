@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ColorModeButton from "./ColorModeButton.vue";
 import AddToiletButton from "./AddToiletButton.vue";
+import Profile from "./Profile/index.vue";
 </script>
 
 <template>
@@ -12,6 +13,9 @@ import AddToiletButton from "./AddToiletButton.vue";
 
     <!-- 右邊功能區 -->
     <div class="flex items-center gap-3">
+      <!-- 個人資料按鈕 -->
+      <Profile />
+
       <!-- 新增廁所按鈕 -->
       <AddToiletButton />
 

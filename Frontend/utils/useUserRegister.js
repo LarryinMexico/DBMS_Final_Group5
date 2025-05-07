@@ -2,7 +2,7 @@
 import { watch } from "vue";
 import { useUser, useAuth } from "@clerk/vue";
 import { BASE_URL } from "@/constants";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/user";
 
 export function useUserRegister() {
   const { user } = useUser();
