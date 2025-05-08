@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 
-export const useToiletDrawer = defineStore('toiletDrawer', () => {
+export const useToiletDrawer = defineStore("toiletDrawer", () => {
   const isOpen = ref(false);
   const toiletId = ref<number | null>(null);
 

@@ -1,53 +1,25 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { z } from "zod";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import ToiletMapSelector from "@/components/TheHeader/ToiletMapSelector.vue";
 import { reverseGeocode } from "@/utils/reverseGeocode.js";
-import { onMounted } from "vue";
 import { useToiletAPI } from "@/utils/useToiletAPI.js";
 import { BASE_URL } from "~/constants";
 import { useAuth } from "@clerk/vue";
 import { useBuildingStore } from "~/stores/building";
 
+const typeLabelMap = {
+  male: "男廁",
+  female: "女廁",
+  unisex: "性別友善廁所",
+  accessible: "無障礙廁所",
+};
+
 const buildingStore = useBuildingStore();
 const { postToilet } = useToiletAPI();
 const { getToken } = useAuth();
-
-const buildingOptions = ref([]);
-const buildingMap = ref({}); // 用來查 max_floor & id
-
-onMounted(async () => {
-  const res = await fetch(`${BASE_URL}/buildings/`);
-  const buildings = await res.json();
-
-  buildingOptions.value = buildings.map((b) => ({
-    label: b.name,
-    value: b.id,
-  }));
-
-  buildingMap.value = Object.fromEntries(buildings.map((b) => [b.id, b]));
-});
-
-const floorOptions = computed(() => {
-  if (locationSource.value === "building") {
-    const id = values.building?.value;
-    const max = buildingMap.value[id]?.max_floor ?? 0;
-    return Array.from({ length: max }, (_, i) => ({
-      label: `${i + 1} 樓`,
-      value: `${i + 1}`,
-    }));
-  }
-  const min = Number(values.floorMin ?? 1);
-  const max = Number(values.floorMax);
-  if (isNaN(min) || isNaN(max) || min > max) return [];
-  return Array.from({ length: max - min + 1 }, (_, i) => {
-    const floorNum = min + i;
-    const label = floorNum < 0 ? `B${Math.abs(floorNum)}` : `${floorNum} 樓`;
-    return { label, value: `${floorNum}` };
-  });
-});
 
 const isOpen = ref(false);
 const isSubmitting = ref(false);
@@ -55,12 +27,33 @@ const location = ref({ lng: 121.5773869, lat: 24.9878484 });
 const locationSource = ref("building");
 const address = reverseGeocode(location.value.lng, location.value.lat);
 
+const buildingOptions = ref([]);
+const buildingMap = ref({});
+
 watch(location, async (newLocation) => {
   if (locationSource.value === "custom") {
     address.value = await reverseGeocode(newLocation);
     buildingName.value = address.value;
   }
 });
+
+watch(
+  isSubmitting,
+  async (val) => {
+    if (!val) {
+      const res = await fetch(`${BASE_URL}/buildings/`);
+      const buildings = await res.json();
+
+      buildingOptions.value = buildings.map((b) => ({
+        label: b.name,
+        value: b.id,
+      }));
+
+      buildingMap.value = Object.fromEntries(buildings.map((b) => [b.id, b]));
+    }
+  },
+  { immediate: true },
+);
 
 const typeOptions = [
   { label: "男廁", value: "male" },
@@ -71,13 +64,12 @@ const typeOptions = [
 
 const toiletSchema = toTypedSchema(
   z.object({
-    building: z.string().optional(),
+    building: z.any().optional(),
     buildingName: z.string().optional(),
     floorMin: z.string().optional(),
     floorMax: z.string().optional(),
     floor: z.string({ required_error: "請選擇樓層" }),
     type: z.string({ required_error: "請選擇廁所類型" }),
-    name: z.string().optional(),
   }),
 );
 
@@ -90,7 +82,27 @@ const [buildingName, buildingNameAttrs] = defineField("buildingName");
 const [floorMax, floorMaxAttrs] = defineField("floorMax");
 const [floor, floorAttrs] = defineField("floor");
 const [type, typeAttrs] = defineField("type");
-const [name, nameAttrs] = defineField("name");
+
+const floorOptions = computed(() => {
+  if (locationSource.value === "building") {
+    const id = values.building?.value;
+    const max = buildingMap.value[id]?.max_floor ?? 0;
+    return Array.from({ length: max }, (_, i) => ({
+      label: `${i + 1} 樓`,
+      value: `${i + 1}`,
+    }));
+  }
+
+  const min = Number(values.floorMin ?? 1);
+  const max = Number(values.floorMax);
+  if (isNaN(min) || isNaN(max) || min > max) return [];
+
+  return Array.from({ length: max - min + 1 }, (_, i) => {
+    const floorNum = min + i;
+    const label = floorNum < 0 ? `B${Math.abs(floorNum)}` : `${floorNum} 樓`;
+    return { label, value: `${floorNum}` };
+  });
+});
 
 const isSubmitDisabled = computed(() => {
   return !values.floor || !values.type || isSubmitting.value;
@@ -132,25 +144,33 @@ async function onSubmit(values) {
       building_id = Number(values.building?.value);
     }
 
+    // 自動組合名稱
+    const buildingNameResolved =
+      buildingMap.value[building_id]?.name || values.buildingName;
+    const floorLabel = `${values.floor} 樓`;
+    const typeLabel = typeLabelMap[values.type.label] || values.type.label;
+    const floorValue = Number(values.floor?.value);
+    const composedTitle = `${buildingNameResolved} ${floorValue}樓 ${typeLabel}`;
+
     await postToilet({
       building_id,
-      floor: Number(values.floor?.value),
-      type: values.type?.value,
-      title: values.name ?? "",
+      floor: floorValue,
+      type: values.type.value,
+      title: composedTitle,
     });
-
     useToast().add({
       title: "Success",
       description: "成功新增廁所資訊",
       color: "success",
     });
+
     isOpen.value = false;
   } catch (error) {
     console.error("送出失敗:", error);
     useToast().add({ title: "錯誤", description: error.message, color: "red" });
   } finally {
     isSubmitting.value = false;
-    hasSubmitted = false; // reset flag
+    hasSubmitted = false;
   }
 }
 </script>
@@ -160,8 +180,8 @@ async function onSubmit(values) {
     <USlideover v-model:open="isOpen" title="新增廁所資訊">
       <UButton
         icon="i-lucide-plus"
-        color="green"
-        variant="solid"
+        color="success"
+        variant="soft"
         @click="isOpen = true"
       >
         新增廁所
@@ -261,14 +281,6 @@ async function onSubmit(values) {
                   v-model="type"
                   v-bind="typeAttrs"
                   :error="errors.type"
-                  class="w-1/2"
-                />
-
-                <UInput
-                  label="名稱（選填）"
-                  placeholder="例如：靠近電梯的廁所"
-                  v-model="name"
-                  v-bind="nameAttrs"
                   class="w-1/2"
                 />
               </div>

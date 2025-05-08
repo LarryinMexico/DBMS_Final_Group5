@@ -17,7 +17,7 @@ const userStore = useUserStore();
     <!-- 功能列 -->
     <div class="flex items-center gap-3">
       <!-- 個人資料（帶入使用者 ID）-->
-      
+
       <Profile :user-id="userStore?.id !== null ? String(userStore.id) : ''" />
       <AddToiletButton />
       <ColorModeButton />

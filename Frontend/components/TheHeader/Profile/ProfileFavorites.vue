@@ -21,10 +21,12 @@ const fetchFavoritesAndToilets = async () => {
     favoritesSet.value = new Set(toiletIds);
 
     const toiletResList = await Promise.all(
-      toiletIds.map((id: number) => fetch(`${BASE_URL}/toilets/${id}`))
+      toiletIds.map((id: number) => fetch(`${BASE_URL}/toilets/${id}`)),
     );
 
-    const toiletData = await Promise.all(toiletResList.map(res => res.json()));
+    const toiletData = await Promise.all(
+      toiletResList.map((res) => res.json()),
+    );
     toilets.value = toiletData;
   } catch (err) {
     console.error("❌ 載入最愛失敗", err);
@@ -39,7 +41,7 @@ const fetchStats = async () => {
       data.map((item: any) => [
         item.toilet_id,
         { avg_rating: item.avg_rating, count: item.count },
-      ])
+      ]),
     );
   } catch (err) {
     console.error("❌ 載入 stats 失敗", err);
@@ -91,7 +93,9 @@ onMounted(async () => {
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-base font-bold">
           {{ toilet.title || "無名稱" }}
-          <span class="text-sm text-gray-400 ml-1">📍{{ toilet.floor }} 樓</span>
+          <span class="text-sm text-gray-400 ml-1"
+            >📍{{ toilet.floor }} 樓</span
+          >
         </h3>
       </div>
 

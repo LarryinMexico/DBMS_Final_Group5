@@ -57,7 +57,6 @@ watch(showPopover, async (open) => {
 
           <div v-else-if="item.label === '最愛'" class="space-y-2 px-2 py-2">
             <ProfileFavorites :userId="props.userId" />
-
           </div>
 
           <div v-else-if="item.label === '評論'" class="space-y-2 px-2 py-2">

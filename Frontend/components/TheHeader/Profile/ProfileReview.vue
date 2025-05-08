@@ -68,7 +68,8 @@ const fetchReactionsAndUsers = async () => {
         };
 
         const toiletData = await toiletRes.json();
-        titles[review.toilet_id] = toiletData.title || `廁所 #${review.toilet_id}`;
+        titles[review.toilet_id] =
+          toiletData.title || `廁所 #${review.toilet_id}`;
       } catch (e) {
         reactions[review.id] = 0;
       }
@@ -123,7 +124,9 @@ const paginatedReviews = computed(() => {
         :label="sortOrder === 'asc' ? '低到高' : '高到低'"
         size="sm"
         @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-        :icon="sortOrder === 'asc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'"
+        :icon="
+          sortOrder === 'asc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'
+        "
         variant="ghost"
       />
     </div>
@@ -145,21 +148,27 @@ const paginatedReviews = computed(() => {
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
               <p class="text-sm font-semibold">
-                {{ userInfoMap[review.user_id]?.name || `使用者 ${review.user_id}` }}
+                {{
+                  userInfoMap[review.user_id]?.name ||
+                  `使用者 ${review.user_id}`
+                }}
               </p>
               <div class="flex items-center space-x-1 text-yellow-500">
                 <UIcon
                   v-for="n in 5"
                   :key="n"
-                  :name="n <= review.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                  :name="
+                    n <= review.rating
+                      ? 'i-heroicons-star-solid'
+                      : 'i-heroicons-star'
+                  "
                   class="w-4 h-4"
                 />
               </div>
 
-              <span
-                v-if="review.toilet_id"
-                class="text-xs text-gray-400"
-                >  @ {{ toiletTitleMap[review.toilet_id] }}</span>
+              <span v-if="review.toilet_id" class="text-xs text-gray-400">
+                @ {{ toiletTitleMap[review.toilet_id] }}</span
+              >
             </div>
 
             <UButton
@@ -173,10 +182,12 @@ const paginatedReviews = computed(() => {
           </div>
 
           <p class="text-sm text-gray-600 mt-1">
-            {{ review.comment || '無評論內容' }}
+            {{ review.comment || "無評論內容" }}
           </p>
 
-          <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
+          <div
+            class="flex justify-between items-center text-xs text-gray-400 mt-1"
+          >
             <span>{{ review.updateAt }}</span>
           </div>
         </div>
