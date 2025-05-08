@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useReviews } from "@/utils/useReviews";
 import { BASE_URL } from "@/constants";
+import Profile from "@/components/TheHeader/Profile/index.vue";
 
 const props = defineProps<{ toiletId: number; reload: number }>();
 
@@ -88,10 +89,24 @@ const sortedReviews = computed(() => {
   });
   return sorted;
 });
+
+const selectedUserId = ref<number | null>(null);
+const showUserModal = ref(false);
+
+const openUserModal = (userId: number) => {
+  selectedUserId.value = userId;
+  showUserModal.value = true;
+};
+
 </script>
 
 <template>
-  <div class="space-y-3 mt-4">
+  <div v-if="reviews.length === 0" class="text-sm text-gray-500 mt-4">
+    <p>目前沒有評論</p>
+    <p>快來成為第一位評論者吧！</p>
+    <p>點擊上方按鈕來新增評論</p>
+  </div>
+  <div v-else class="space-y-3 mt-4">
     <!-- 排序按鈕區 -->
     <div class="flex justify-between items-center gap-2 mb-2">
       <!-- 排序條件切換（時間 / 評分） -->
@@ -138,6 +153,7 @@ const sortedReviews = computed(() => {
         size="sm"
         :src="userInfoMap[review.user_id]?.avatarUrl"
         class="mt-3"
+        @click="openUserModal(review.user_id)"
       />
 
       <div class="flex flex-col w-full">
@@ -232,6 +248,15 @@ const sortedReviews = computed(() => {
             <UButton label="儲存變更" color="primary" @click="confirmEdit" />
           </div>
         </div>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="showUserModal">
+      <template #content>
+        <Profile
+          :userId="selectedUserId?.toString() || ''"
+          @close="showUserModal = false"
+          />
       </template>
     </UModal>
   </div>

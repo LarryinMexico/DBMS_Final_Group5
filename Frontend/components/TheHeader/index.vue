@@ -5,6 +5,7 @@ import AddToiletButton from "./AddToiletButton.vue";
 import Profile from "./Profile/index.vue";
 
 const userStore = useUserStore();
+const showProfile = ref(false);
 </script>
 
 <template>
@@ -18,7 +19,25 @@ const userStore = useUserStore();
     <div class="flex items-center gap-3">
       <!-- 個人資料（帶入使用者 ID）-->
 
-      <Profile :user-id="userStore?.id !== null ? String(userStore.id) : ''" />
+      <div class="flex items-center gap-3">
+        <UButton
+          icon="i-heroicons-user-circle"
+          label="個人資料"
+          size="md"
+          variant="soft"
+          color="info"
+          @click="showProfile = true"
+        />
+
+        <UModal v-model:open="showProfile">
+          <template #content>
+        <Profile
+          :userId="userStore.id?.toString() || ''"
+          @close="showProfile = false"
+          />
+      </template>
+        </UModal>
+      </div>
       <AddToiletButton />
       <ColorModeButton />
 
