@@ -41,17 +41,21 @@ const currentPage = ref(1);
 
 const reactionMap = ref<Record<number, number>>({});
 const userInfoMap = ref<UserMap>({});
+const toiletTitleMap = ref<Record<number, string>>({});
 const drawerStore = useToiletDrawer();
 
 const fetchReactionsAndUsers = async () => {
   const reactions: Record<number, number> = {};
   const users: UserMap = {};
+  const titles: Record<number, string> = {};
+
   await Promise.all(
     props.reviews.map(async (review) => {
       try {
-        const [reactionRes, userRes] = await Promise.all([
+        const [reactionRes, userRes, toiletRes] = await Promise.all([
           fetch(`${BASE_URL}/reactions/review/${review.id}`),
           fetch(`${BASE_URL}/users/${review.user_id}`),
+          fetch(`${BASE_URL}/toilets/${review.toilet_id}`),
         ]);
 
         const reactionData = await reactionRes.json();
@@ -62,6 +66,9 @@ const fetchReactionsAndUsers = async () => {
           name: userData.name,
           avatarUrl: userData.avatarUrl,
         };
+
+        const toiletData = await toiletRes.json();
+        titles[review.toilet_id] = toiletData.title || `廁所 #${review.toilet_id}`;
       } catch (e) {
         reactions[review.id] = 0;
       }
@@ -70,6 +77,7 @@ const fetchReactionsAndUsers = async () => {
 
   reactionMap.value = reactions;
   userInfoMap.value = users;
+  toiletTitleMap.value = titles;
 };
 
 onMounted(fetchReactionsAndUsers);
@@ -147,6 +155,11 @@ const paginatedReviews = computed(() => {
                   class="w-4 h-4"
                 />
               </div>
+
+              <span
+                v-if="review.toilet_id"
+                class="text-xs text-gray-400"
+                >  @ {{ toiletTitleMap[review.toilet_id] }}</span>
             </div>
 
             <UButton
@@ -165,7 +178,6 @@ const paginatedReviews = computed(() => {
 
           <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
             <span>{{ review.updateAt }}</span>
-            <span>💬 點我查看廁所</span>
           </div>
         </div>
       </div>

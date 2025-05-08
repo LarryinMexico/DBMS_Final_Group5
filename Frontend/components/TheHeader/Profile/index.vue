@@ -1,35 +1,25 @@
 <script setup lang="ts">
 import { BASE_URL } from "@/constants";
-import { ref, onMounted, watchEffect } from "vue";
 import ProfileReview from "./ProfileReview.vue";
+import ProfileFavorites from "./ProfileFavorites.vue";
 
 const props = defineProps<{ userId: string }>();
 
 const showPopover = ref(false);
 const activeTab = ref(0);
-const favorites = ref([]);
 const reviews = ref([]);
 const isLoading = ref(true);
 
-watchEffect(async () => {
-  if (!props.userId) return;
+watch(showPopover, async (open) => {
+  if (!open || !props.userId) return;
 
   isLoading.value = true;
-
   try {
-    const [favRes, revRes] = await Promise.all([
-      fetch(`${BASE_URL}/favorites/list/${props.userId}`),
-      fetch(`${BASE_URL}/reviews/user/${props.userId}`),
-    ]);
-
-    if (!favRes.ok || !revRes.ok) {
-      throw new Error("取得資料失敗");
-    }
-
-    favorites.value = await favRes.json();
-    reviews.value = await revRes.json();
+    const res = await fetch(`${BASE_URL}/reviews/user/${props.userId}`);
+    if (!res.ok) throw new Error("取得評論失敗");
+    reviews.value = await res.json();
   } catch (err) {
-    console.error("載入個人資料失敗", err);
+    console.error("❌ 載入 review 失敗", err);
   } finally {
     isLoading.value = false;
   }
@@ -66,7 +56,8 @@ watchEffect(async () => {
           </div>
 
           <div v-else-if="item.label === '最愛'" class="space-y-2 px-2 py-2">
-            <h3 class="text-sm font-semibold">❤️ 我的最愛</h3>
+            <ProfileFavorites :userId="props.userId" />
+
           </div>
 
           <div v-else-if="item.label === '評論'" class="space-y-2 px-2 py-2">
