@@ -1,24 +1,31 @@
 <script setup lang="ts">
 import { BASE_URL } from "@/constants";
-import { useUserStore } from "@/stores/user";
+import { ref, onMounted, watchEffect } from "vue";
 import ProfileReview from "./ProfileReview.vue";
+
+const props = defineProps<{ userId: string }>();
 
 const showPopover = ref(false);
 const activeTab = ref(0);
 const favorites = ref([]);
 const reviews = ref([]);
 const isLoading = ref(true);
-const userStore = useUserStore();
 
-onMounted(async () => {
-  const userId = userStore?.id;
+watchEffect(async () => {
+  if (!props.userId) return;
+
+  isLoading.value = true;
 
   try {
     const [favRes, revRes] = await Promise.all([
-      fetch(`${BASE_URL}/favorites/list/${userId}`),
-      fetch(`${BASE_URL}/reviews/user/${userId}`),
+      fetch(`${BASE_URL}/favorites/list/${props.userId}`),
+      fetch(`${BASE_URL}/reviews/user/${props.userId}`),
     ]);
-    console.log(userId);
+
+    if (!favRes.ok || !revRes.ok) {
+      throw new Error("取得資料失敗");
+    }
+
     favorites.value = await favRes.json();
     reviews.value = await revRes.json();
   } catch (err) {
@@ -54,17 +61,14 @@ onMounted(async () => {
         :items="[{ label: '最愛' }, { label: '評論' }, { label: '統計' }]"
       >
         <template #content="{ item }">
-          <!-- 載入中 -->
           <div v-if="isLoading" class="text-sm text-gray-500 px-2 py-4">
             載入中...
           </div>
 
-          <!-- 我的最愛 -->
           <div v-else-if="item.label === '最愛'" class="space-y-2 px-2 py-2">
             <h3 class="text-sm font-semibold">❤️ 我的最愛</h3>
           </div>
 
-          <!-- 我的評論 -->
           <div v-else-if="item.label === '評論'" class="space-y-2 px-2 py-2">
             <ProfileReview :reviews="reviews" />
           </div>

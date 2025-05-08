@@ -40,7 +40,6 @@ const userInfoMap = ref<UserMap>({});
 const fetchReactionsAndUsers = async () => {
   const reactions: Record<number, number> = {};
   const users: UserMap = {};
-
   await Promise.all(
     props.reviews.map(async (review) => {
       try {

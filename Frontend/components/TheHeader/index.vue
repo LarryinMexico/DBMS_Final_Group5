@@ -1,28 +1,28 @@
 <script setup lang="ts">
+import { useUserStore } from "@/stores/user";
 import ColorModeButton from "./ColorModeButton.vue";
 import AddToiletButton from "./AddToiletButton.vue";
 import Profile from "./Profile/index.vue";
+
+const userStore = useUserStore();
 </script>
 
 <template>
   <header class="h-16 border-b px-4 flex items-center justify-between">
-    <!-- 左邊：Logo -->
+    <!-- Logo -->
     <NuxtLink to="/" class="text-xl font-bold hover:opacity-80">
       🚽 NCCU Toilet Map
     </NuxtLink>
 
-    <!-- 右邊功能區 -->
+    <!-- 功能列 -->
     <div class="flex items-center gap-3">
-      <!-- 個人資料按鈕 -->
-      <Profile />
-
-      <!-- 新增廁所按鈕 -->
+      <!-- 個人資料（帶入使用者 ID）-->
+      
+      <Profile :user-id="userStore?.id !== null ? String(userStore.id) : ''" />
       <AddToiletButton />
-
-      <!-- 暗色模式切換 -->
       <ColorModeButton />
 
-      <!-- 登入按鈕-->
+      <!-- 登入/登出 -->
       <SignedOut>
         <SignInButton
           mode="modal"
@@ -34,9 +34,9 @@ import Profile from "./Profile/index.vue";
             },
           }"
         >
-          <UButton color="secondary" variant="soft" icon="i-lucide-user"
-            >登入</UButton
-          >
+          <UButton color="secondary" variant="soft" icon="i-lucide-user">
+            登入
+          </UButton>
         </SignInButton>
       </SignedOut>
       <SignedIn>
