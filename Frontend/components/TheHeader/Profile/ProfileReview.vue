@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import type { PropType } from "vue";
-import { NuxtLink } from "#components";
 import { BASE_URL } from "@/constants";
+import { useToiletDrawer } from "@/stores/useToiletDrawer";
 
 interface Review {
   id: number;
@@ -29,13 +29,19 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  pageSize: {
+    type: Number,
+    default: 5,
+  },
 });
 
 const sortKey = ref<"time" | "rating">("time");
 const sortOrder = ref<"asc" | "desc">("desc");
+const currentPage = ref(1);
 
 const reactionMap = ref<Record<number, number>>({});
 const userInfoMap = ref<UserMap>({});
+const drawerStore = useToiletDrawer();
 
 const fetchReactionsAndUsers = async () => {
   const reactions: Record<number, number> = {};
@@ -78,6 +84,13 @@ const sortedReviews = computed(() => {
     return sortOrder.value === "asc" ? result : -result;
   });
 });
+
+const paginatedReviews = computed(() => {
+  const start = (currentPage.value - 1) * props.pageSize;
+  const end = start + props.pageSize;
+  console.log("paginatedReviews", start, end);
+  return sortedReviews.value.slice(start, end);
+});
 </script>
 
 <template>
@@ -102,68 +115,69 @@ const sortedReviews = computed(() => {
         :label="sortOrder === 'asc' ? '低到高' : '高到低'"
         size="sm"
         @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-        :icon="
-          sortOrder === 'asc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'
-        "
+        :icon="sortOrder === 'asc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'"
         variant="ghost"
       />
     </div>
 
-    <NuxtLink
-      v-for="review in sortedReviews"
+    <div
+      v-for="review in paginatedReviews"
       :key="review.id"
-      :to="`/toilets/${review.toilet_id}`"
-      class="flex items-start space-x-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition"
+      @click="drawerStore.open(review.toilet_id)"
+      class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition"
     >
-      <UAvatar
-        size="sm"
-        class="mt-3"
-        :src="userInfoMap[review.user_id]?.avatarUrl"
-      />
+      <div class="flex items-start space-x-3">
+        <UAvatar
+          size="sm"
+          class="mt-3"
+          :src="userInfoMap[review.user_id]?.avatarUrl"
+        />
 
-      <div class="flex flex-col w-full">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-2">
-            <p class="text-sm font-semibold">
-              {{
-                userInfoMap[review.user_id]?.name || `使用者 ${review.user_id}`
-              }}
-            </p>
-            <div class="flex items-center space-x-1 text-yellow-500">
-              <UIcon
-                v-for="n in 5"
-                :key="n"
-                :name="
-                  n <= review.rating
-                    ? 'i-heroicons-star-solid'
-                    : 'i-heroicons-star'
-                "
-                class="w-4 h-4"
-              />
+        <div class="flex flex-col w-full">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <p class="text-sm font-semibold">
+                {{ userInfoMap[review.user_id]?.name || `使用者 ${review.user_id}` }}
+              </p>
+              <div class="flex items-center space-x-1 text-yellow-500">
+                <UIcon
+                  v-for="n in 5"
+                  :key="n"
+                  :name="n <= review.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                  class="w-4 h-4"
+                />
+              </div>
             </div>
+
+            <UButton
+              icon="i-heroicons-heart"
+              variant="ghost"
+              color="error"
+              :disabled="true"
+            >
+              <span class="text-sm">{{ reactionMap[review.id] || 0 }}</span>
+            </UButton>
           </div>
 
-          <UButton
-            icon="i-heroicons-heart"
-            variant="ghost"
-            color="error"
-            :disabled="true"
-          >
-            <span class="text-sm">{{ reactionMap[review.id] || 0 }}</span>
-          </UButton>
-        </div>
+          <p class="text-sm text-gray-600 mt-1">
+            {{ review.comment || '無評論內容' }}
+          </p>
 
-        <p class="text-sm text-gray-600 mt-1">
-          {{ review.comment || "無評論內容" }}
-        </p>
-
-        <div
-          class="flex justify-between items-center text-xs text-gray-400 mt-1"
-        >
-          <span>{{ review.updateAt }}</span>
-          <span>💬 點我查看廁所</span>
+          <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
+            <span>{{ review.updateAt }}</span>
+            <span>💬 點我查看廁所</span>
+          </div>
         </div>
       </div>
-    </NuxtLink>
+    </div>
+
+    <div class="pt-2 items-center flex justify-center">
+      <UPagination
+        v-if="sortedReviews.length > props.pageSize"
+        v-model:page="currentPage"
+        :itemsPerPage="props.pageSize"
+        :total="sortedReviews.length"
+      />
+    </div>
   </div>
 </template>
