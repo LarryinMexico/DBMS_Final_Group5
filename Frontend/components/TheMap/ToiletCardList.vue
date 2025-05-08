@@ -3,6 +3,8 @@ import { useToast } from "#imports";
 import { BASE_URL } from "@/constants/index.js";
 import { useUserStore } from "@/stores/user";
 
+const colorMode = useColorMode();
+
 defineProps<{
   toilets: Array<{
     id: number;
@@ -101,7 +103,7 @@ const toggleFavorite = async (toiletId: number) => {
         <h3 class="text-base font-bold">
           {{ toilet.title || "無名稱" }}
         </h3>
-        <UIcon name="i-custom-male" class="text-gray-500" />
+        <UIcon :name="'i-custom-' + toilet.type + (colorMode.value === 'dark' ? '-dark' : '')" class="size-8" mode="svg" />
       </div>
 
       <div class="flex items-center space-x-4 text-sm text-red-500">
