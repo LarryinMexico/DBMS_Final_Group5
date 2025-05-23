@@ -26,7 +26,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 p-6">
     <UTabs
       v-model="activeTab"
       :items="[{ label: '最愛' }, { label: '評論' }, { label: '統計' }]"
