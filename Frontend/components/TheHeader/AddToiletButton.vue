@@ -1,5 +1,4 @@
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
 import { z } from "zod";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -9,6 +8,7 @@ import { useToiletAPI } from "@/utils/useToiletAPI.js";
 import { BASE_URL } from "~/constants";
 import { useAuth } from "@clerk/vue";
 import { useBuildingStore } from "~/stores/building";
+import { useUserStore } from "~/stores/user";
 
 const typeLabelMap = {
   male: "男廁",
@@ -18,6 +18,7 @@ const typeLabelMap = {
 };
 
 const buildingStore = useBuildingStore();
+const userStore = useUserStore();
 const { postToilet } = useToiletAPI();
 const { getToken } = useAuth();
 
@@ -178,13 +179,32 @@ async function onSubmit(values) {
 <template>
   <div>
     <USlideover v-model:open="isOpen" title="新增廁所資訊">
+      <UTooltip
+        v-if="!userStore.isAdmin"
+        text="只有管理員可以新增廁所"
+        :popper="{ offset: [0, 6] }"
+      >
+        <div>
+          <UButton
+            icon="i-lucide-plus"
+            color="success"
+            variant="soft"
+            :disabled="true"
+          >
+            <span class="hidden sm:inline ml-1">新增廁所</span>
+          </UButton>
+        </div>
+      </UTooltip>
+
+      <!-- ✅ 如果是 admin，直接顯示可點擊的按鈕 -->
       <UButton
+        v-else
         icon="i-lucide-plus"
         color="success"
         variant="soft"
         @click="isOpen = true"
       >
-        <span class="hidden sm:inline ml-1">個人資料</span>
+        <span class="hidden sm:inline ml-1">新增廁所</span>
       </UButton>
       <template #body>
         <div class="flex flex-col h-full justify-start gap-y-10">

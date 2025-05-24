@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch } from "vue";
 
 // 模擬傳入的 props 或 emit，後續可調整
 const emit = defineEmits<{
-  (e: 'update:filters', value: FilterOptions): void
+  (e: "update:filters", value: FilterOptions): void;
 }>();
 
 export interface FilterOptions {
   floor?: number;
   accessible?: boolean;
-  gender?: 'male' | 'female' | 'unisex';
+  gender?: "male" | "female" | "unisex";
 }
 
 const filters = ref<FilterOptions>({});
 
 const floor = ref<number | null>(null);
 const accessible = ref(false);
-const gender = ref<'male' | 'female' | 'unisex' | null>(null);
+const gender = ref<"male" | "female" | "unisex" | null>(null);
 
 watch([floor, accessible, gender], () => {
   filters.value = {
@@ -24,7 +24,7 @@ watch([floor, accessible, gender], () => {
     accessible: accessible.value || undefined,
     gender: gender.value ?? undefined,
   };
-  emit('update:filters', filters.value);
+  emit("update:filters", filters.value);
 });
 </script>
 

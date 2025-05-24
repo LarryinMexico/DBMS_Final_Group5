@@ -18,8 +18,9 @@ const emit = defineEmits(["select"]);
 
 const favorites = ref<Set<number>>(new Set());
 const stats = ref<Record<number, { avg_rating: number; count: number }>>({});
-
+const toast = useToast();
 const isLoading = ref(true);
+const isReporting = ref(false);
 
 const fetchFavorites = async () => {
   const userId = userStore?.id;
@@ -89,6 +90,44 @@ const toggleFavorite = async (toiletId: number) => {
     toast.add({ title: "操作失敗", description: "請稍後再試", color: "error" });
   }
 };
+
+const showReportModal = ref(false);
+const reportToilet = ref<{ id: number; title?: string } | null>(null);
+const reportDesc = ref("");
+
+const submitReport = async () => {
+  const userId = userStore?.id;
+  if (!userId || !reportToilet.value) return;
+
+  isReporting.value = true;
+  console.log("提交回報:", {
+    user_id: userId,
+    toilet_id: reportToilet.value.id,
+    description: reportDesc.value,
+  });
+
+  try {
+    const res = await fetch(`${BASE_URL}/reports/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        toilet_id: reportToilet.value.id,
+        description: reportDesc.value,
+      }),
+    });
+
+    if (!res.ok) throw new Error("回報失敗");
+
+    toast.add({ title: "已成功回報", color: "success" });
+    showReportModal.value = false;
+    reportDesc.value = "";
+  } catch (err) {
+    toast.add({ title: "回報失敗", color: "error" });
+  } finally {
+    isReporting.value = false;
+  }
+};
 </script>
 
 <template>
@@ -141,6 +180,18 @@ const toggleFavorite = async (toiletId: number) => {
         />
 
         <UButton v-else loading variant="soft" color="neutral" size="xs" />
+        <UButton
+          icon="i-heroicons-exclamation-triangle"
+          size="xs"
+          variant="soft"
+          color="warning"
+          @click.stop="
+            reportToilet = toilet;
+            showReportModal = true;
+          "
+        >
+          我要回報
+        </UButton>
       </div>
     </UCard>
 
@@ -148,4 +199,29 @@ const toggleFavorite = async (toiletId: number) => {
       🚽 查無廁所資訊
     </p>
   </div>
+  <UModal v-model:open="showReportModal">
+    <template #content>
+      <div class="p-4 space-y-3">
+        <h2 class="text-lg font-bold">
+          回報問題：{{ reportToilet?.title || "（無名稱）" }}
+        </h2>
+        <UTextarea
+          v-model="reportDesc"
+          placeholder="請輸入問題描述，例如設備壞掉、無法使用等"
+          autoresize
+          class="w-full"
+        />
+        <div class="flex justify-end gap-2">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            @click="showReportModal = false"
+          >
+            取消
+          </UButton>
+          <UButton color="primary" @click="submitReport"> 送出回報 </UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
 </template>

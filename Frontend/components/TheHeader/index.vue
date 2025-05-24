@@ -7,12 +7,14 @@ import AddToiletButton from "./AddToiletButton.vue";
 import Profile from "./Profile/index.vue";
 import Filter from "./Filter.vue";
 import type { FilterOptions } from "./Filter.vue";
+import ReportListModal from "./ReportListModal.vue";
 
 const userStore = useUserStore();
 const locationStore = useLocationStore();
 const showProfile = ref(false);
 const hasError = ref(false);
 const showFilter = ref(false);
+const showReportModal = ref(false);
 
 /* 按鈕動態屬性 */
 const locLabel = computed(() =>
@@ -51,12 +53,11 @@ async function handleLocClick() {
 
     <!-- 功能列 -->
     <div class="flex items-end gap-2">
-
-          <UButton
+      <UButton
         icon="i-lucide-filter"
         size="md"
         variant="soft"
-        color="primary"
+        color="info"
         @click="showFilter = true"
       >
         <span class="hidden sm:inline ml-1">篩選</span>
@@ -98,6 +99,31 @@ async function handleLocClick() {
       <!-- 新增廁所 -->
       <AddToiletButton />
 
+      <!-- 報修列表（只顯示給管理員） -->
+      <UTooltip v-if="!userStore.isAdmin" text="僅限管理員">
+        <div>
+          <UButton
+            icon="i-lucide-wrench"
+            size="md"
+            variant="soft"
+            color="warning"
+            :disabled="true"
+          >
+            <span class="hidden sm:inline ml-1">報修列表</span>
+          </UButton>
+        </div>
+      </UTooltip>
+      <UButton
+        v-else
+        icon="i-lucide-wrench"
+        size="md"
+        variant="soft"
+        color="warning"
+        @click="showReportModal = true"
+      >
+        <span class="hidden sm:inline ml-1">報修列表</span>
+      </UButton>
+
       <!-- 登入 / 登出（略，保持原樣） -->
       <SignedOut>
         <SignInButton
@@ -118,13 +144,16 @@ async function handleLocClick() {
       <SignedIn><UserButton /></SignedIn>
     </div>
   </header>
-<UModal v-model:open="showFilter">
-  <template #content>
-    <div class="p-4 space-y-2">
-      <h2 class="text-lg font-bold">🚻 廁所篩選</h2>
-      <Filter @update:filters="(f: FilterOptions) => console.log('選擇條件', f)" />
-      <UButton block @click="showFilter = false">關閉</UButton>
-    </div>
-  </template>
-</UModal>
+  <UModal v-model:open="showFilter">
+    <template #content>
+      <div class="p-4 space-y-2">
+        <h2 class="text-lg font-bold">🚻 廁所篩選</h2>
+        <Filter
+          @update:filters="(f: FilterOptions) => console.log('選擇條件', f)"
+        />
+        <UButton block @click="showFilter = false">關閉</UButton>
+      </div>
+    </template>
+  </UModal>
+  <ReportListModal :open="showReportModal" @close="showReportModal = false" />
 </template>
