@@ -128,11 +128,20 @@ const getItems = (reportId: number) => {
 </script>
 
 <template>
-  <UModal :open="props.open" @close="emit('close')">
-    <template #content>
-      <div class="p-4 space-y-3">
-        <h2 class="text-xl font-bold">🔧 報修列表</h2>
+  <UModal v-model:open="props.open"
+  >
+  <template #header>
+          <h2 class="text-xl font-bold">🔧 報修列表</h2>
+          <UButton
+            icon="i-lucide-x"
+            variant="link"
+            class="absolute right-4 top-4"
+            @click="$emit('close')"
+          />
+          </template>
 
+    <template #body>
+      <div class="p-4 space-y-3">
         <UCard v-for="r in paginatedReports" :key="r.id">
           <template #header>
             <div class="flex items-center justify-between">
@@ -187,8 +196,6 @@ const getItems = (reportId: number) => {
             :total="reports.length"
           />
         </div>
-
-        <UButton block @click="emit('close')">關閉</UButton>
       </div>
     </template>
   </UModal>
