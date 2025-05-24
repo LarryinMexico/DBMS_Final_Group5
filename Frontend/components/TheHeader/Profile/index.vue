@@ -110,6 +110,14 @@ const toggleFollow = async () => {
   }
 };
 
+import { useSocket } from "@/utils/useSocket";
+
+const { joinRoom } = useSocket();
+
+onMounted(() => {
+  joinRoom(); // 🔔 加入自己的房間
+});
+
 
 </script>
 
