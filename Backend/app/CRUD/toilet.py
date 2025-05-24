@@ -107,3 +107,25 @@ def delete_toilet(db: Session, toilet_id: int):
     db.commit()
     
     return True
+
+def add_amenity_to_toilet(db: Session, toilet_id: int, amenity_id: int):
+    from app.models.amenity import Amenity
+    toilet = get_toilet_by_id(db, toilet_id)
+    amenity = db.query(Amenity).filter(Amenity.id == amenity_id).first()
+    if toilet and amenity:
+        toilet.amenities.append(amenity)
+        db.commit()
+        db.refresh(toilet)
+        return toilet
+    return None
+
+def remove_amenity_from_toilet(db: Session, toilet_id: int, amenity_id: int):
+    from app.models.amenity import Amenity
+    toilet = get_toilet_by_id(db, toilet_id)
+    amenity = db.query(Amenity).filter(Amenity.id == amenity_id).first()
+    if toilet and amenity and amenity in toilet.amenities:
+        toilet.amenities.remove(amenity)
+        db.commit()
+        db.refresh(toilet)
+        return toilet
+    return None
