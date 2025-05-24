@@ -17,6 +17,7 @@ class ReportUpdate(BaseModel):
 # 顯示報告列表項目
 class ReportListItem(BaseModel):
     id: int
+    user_id: int
     toilet_id: int
     status: str
     description: str
