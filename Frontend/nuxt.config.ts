@@ -10,4 +10,12 @@ export default defineNuxtConfig({
       class: "bg-default",
     },
   },
+  icon: {
+    customCollections: [
+      {
+        prefix: "custom",
+        dir: "./assets/icons",
+      },
+    ],
+  },
 });

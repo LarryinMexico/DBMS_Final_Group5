@@ -23,6 +23,9 @@ watch(
   () => props.isOpen,
   (val) => {
     localOpen.value = val;
+    if (!val) {
+      selectedToilet.value = null; // Reset when drawer is closed
+    }
   },
 );
 

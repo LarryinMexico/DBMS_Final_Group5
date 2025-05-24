@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useToast } from "#imports";
 import { BASE_URL } from "@/constants/index.js";
-import { useUserStore } from "@/stores/userStore.js";
+import { useUserStore } from "@/stores/user";
+
+const colorMode = useColorMode();
 
 defineProps<{
   toilets: Array<{
@@ -100,10 +102,8 @@ const toggleFavorite = async (toiletId: number) => {
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-base font-bold">
           {{ toilet.title || "無名稱" }}
-          <span class="text-sm text-gray-400 ml-1"
-            >📍{{ toilet.floor }} 樓</span
-          >
         </h3>
+        <UIcon :name="'i-custom-' + toilet.type + (colorMode.value === 'dark' ? '-dark' : '')" class="size-8" mode="svg" />
       </div>
 
       <div class="flex items-center space-x-4 text-sm text-red-500">
