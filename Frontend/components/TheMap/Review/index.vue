@@ -3,6 +3,9 @@ import ReviewForm from "@/components/TheMap/Review/ReviewForm.vue";
 import ReviewList from "@/components/TheMap/Review/ReviewList.vue";
 import { BASE_URL } from "@/constants/index.js";
 
+import type { Amenity } from "../ToiletCardList.vue";
+
+const toast = useToast();
 const props = defineProps<{
   toilet: { id: number; floor: string | number; type: string; title?: string };
 }>();
@@ -33,18 +36,76 @@ const fetchReports = async () => {
 
 onMounted(() => {
   fetchReports();
+  fetchAmenitiesForToilet(props.toilet.id);
 });
+
+const isLoadingAmenities = ref(true);
+const amenitiesForToilet = ref<Amenity[]>([]);
+
+const fetchAmenitiesForToilet = async (toiletId: number) => {
+  isLoadingAmenities.value = true;
+  try {
+    const res = await fetch(
+      `${BASE_URL}/amenities/toilet/${toiletId}/amenities`,
+    );
+    if (!res.ok) throw new Error("載入備品失敗");
+    const data = await res.json();
+    amenitiesForToilet.value = data;
+  } catch (err) {
+    toast.add({ title: "載入備品失敗", color: "error" });
+    amenitiesForToilet.value = [];
+  } finally {
+    isLoadingAmenities.value = false;
+  }
+};
 </script>
 
 <template>
   <div class="space-y-4">
     <UCard v-if="!isLoadingReports && reports.length > 0">
-      <template #header> 🚧 正在處理問題 </template>
-      <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-        <li v-for="r in reports" :key="r.id" class="pl-2 list-disc">
-          {{ r.description }}
-        </li>
-      </ul>
+      <div class="space-y-3">
+        <div class="mb-3">
+          <h3
+            class="flex items-center gap-2 text-base font-medium text-gray-800 dark:text-gray-200 mb-2"
+          >
+            <UIcon
+              name="i-heroicons-exclamation-triangle"
+              class="text-red-500"
+            />
+            問題回報
+          </h3>
+          <div class="space-y-2">
+            <div
+              v-for="r in reports"
+              :key="r.id"
+              class="p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-100 dark:border-red-800/30"
+            >
+              <p class="text-sm text-gray-700 dark:text-gray-300">
+                {{ r.description }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="amenitiesForToilet.length > 0"
+          class="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-1"
+        >
+          <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
+            已設定備品
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <UBadge
+              v-for="item in amenitiesForToilet"
+              :key="item.id"
+              color="primary"
+              variant="soft"
+            >
+              {{ item.name }}
+            </UBadge>
+          </div>
+        </div>
+      </div>
     </UCard>
 
     <ReviewForm :toilet-id="props.toilet.id" @submitted="triggerReload" />

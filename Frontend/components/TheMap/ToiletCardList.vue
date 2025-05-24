@@ -15,7 +15,7 @@ const props = defineProps<{
   }>;
 }>();
 
-interface Amenity {
+export interface Amenity {
   id: number;
   name: string;
   available: boolean; // ✅ 是否已綁定在此廁所上
