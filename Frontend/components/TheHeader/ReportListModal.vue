@@ -49,7 +49,7 @@ const fetchReports = async () => {
       rawData.map(async (r: any) => {
         const [toiletRes, userRes] = await Promise.all([
           fetch(`${BASE_URL}/toilets/${r.toilet_id}`),
-          fetch(`${BASE_URL}/users/4`),
+          fetch(`${BASE_URL}/users/${r.user_id}`),
         ]);
         const [toilet, user] = await Promise.all([
           toiletRes.json(),
