@@ -91,26 +91,25 @@ async function renderBuildingMarkers() {
   });
 }
 
+watch(
+  () => locationStore.panOnce,
+  (flag) => {
+    if (!flag || !mapInstance.value || !locationStore.hasPos) return;
 
- watch(
-   () => locationStore.panOnce,
-   (flag) => {
-     if (!flag || !mapInstance.value || !locationStore.hasPos) return;
+    const { lng, lat } = locationStore.coords!;
 
-     const { lng, lat } = locationStore.coords!;
+    mapInstance.value.flyTo({
+      center: [lng, lat],
+      zoom: 17,
+      essential: true,
+    });
 
-       mapInstance.value.flyTo({
-         center: [lng, lat],
-         zoom: 17,
-         essential: true,
-       });
+    locationStore.panOnce = false; // ↩️ 重置旗標
+  },
+);
 
-    locationStore.panOnce = false;   // ↩️ 重置旗標
-   },
- );
- 
-const userMarker = ref<mapboxgl.Marker | null>(null);  
- // 監聽座標，建立 / 更新 Marker
+const userMarker = ref<mapboxgl.Marker | null>(null);
+// 監聽座標，建立 / 更新 Marker
 watch(
   () => locationStore.coords,
   (pos) => {

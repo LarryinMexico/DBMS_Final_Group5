@@ -32,9 +32,7 @@ onMounted(async () => {
       :items="[{ label: '最愛' }, { label: '評論' }, { label: '統計' }]"
     >
       <template #content="{ item }">
-        <div v-if="isLoading" class="text-sm text-gray-500 py-4">
-          載入中...
-        </div>
+        <div v-if="isLoading" class="text-sm text-gray-500 py-4">載入中...</div>
         <div v-else-if="item.label === '最愛'" class="space-y-2">
           <ProfileFavorites :userId="props.userId" />
         </div>

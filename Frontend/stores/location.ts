@@ -2,19 +2,22 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
-interface Coord { lat: number; lng: number }
+interface Coord {
+  lat: number;
+  lng: number;
+}
 const GEO_TIMEOUT = 10_000;
-const CACHE_TTL   = 60_000;
+const CACHE_TTL = 60_000;
 
 export const useLocationStore = defineStore("location", () => {
   /* state */
   const toast = useToast();
-  const coords      = ref<Coord | null>(null);
+  const coords = ref<Coord | null>(null);
   const lastFetched = ref(0);
-  const panOnce   = ref(false);           // 只飛一次
-  const watching    = ref(false);           // 追蹤中？
-  const watchId     = ref<number | null>(null);
-  const errorMsg      = ref<string | null>(null);  // ⚠️ 新增：錯誤訊息可供 UI 顯示
+  const panOnce = ref(false); // 只飛一次
+  const watching = ref(false); // 追蹤中？
+  const watchId = ref<number | null>(null);
+  const errorMsg = ref<string | null>(null); // ⚠️ 新增：錯誤訊息可供 UI 顯示
   const hasPos = computed(() => coords.value !== null);
 
   async function locate(force = false): Promise<Coord> {
@@ -52,11 +55,11 @@ export const useLocationStore = defineStore("location", () => {
             default:
               errorMsg.value = "定位失敗，請稍後再試";
           }
-                toast.add({
-        title: "定位失敗",
-        description: errorMsg.value,
-        color: "error",
-      });
+          toast.add({
+            title: "定位失敗",
+            description: errorMsg.value,
+            color: "error",
+          });
           reject(new Error(errorMsg.value));
         },
         { enableHighAccuracy: true, timeout: GEO_TIMEOUT },
@@ -65,9 +68,11 @@ export const useLocationStore = defineStore("location", () => {
   }
 
   async function locateAndRequestPan(force = false) {
-    await locate(force).then(() => {
-      if (hasPos.value) panOnce.value = true;
-    }).catch(console.error); // 保留給 UI 顯示
+    await locate(force)
+      .then(() => {
+        if (hasPos.value) panOnce.value = true;
+      })
+      .catch(console.error); // 保留給 UI 顯示
   }
 
   /* ------- 追蹤 ------- */
@@ -97,10 +102,18 @@ export const useLocationStore = defineStore("location", () => {
   }
 
   /* Map.vue call after flyTo */
-  function ackPan() { panOnce.value = false; }
+  function ackPan() {
+    panOnce.value = false;
+  }
 
   return {
-    coords, hasPos, panOnce, watching, errorMsg,
-    locateAndRequestPan, toggleWatch, ackPan,
+    coords,
+    hasPos,
+    panOnce,
+    watching,
+    errorMsg,
+    locateAndRequestPan,
+    toggleWatch,
+    ackPan,
   };
 });

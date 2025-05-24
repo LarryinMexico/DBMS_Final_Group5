@@ -4,16 +4,19 @@ import { useLocationStore } from "@/stores/location";
 
 import ColorModeButton from "./ColorModeButton.vue";
 import AddToiletButton from "./AddToiletButton.vue";
-import Profile         from "./Profile/index.vue";
+import Profile from "./Profile/index.vue";
+import Filter from "./Filter.vue";
+import type { FilterOptions } from "./Filter.vue";
 
-const userStore     = useUserStore();
+const userStore = useUserStore();
 const locationStore = useLocationStore();
-const showProfile   = ref(false);
-const hasError      = ref(false);
+const showProfile = ref(false);
+const hasError = ref(false);
+const showFilter = ref(false);
 
 /* 按鈕動態屬性 */
 const locLabel = computed(() =>
-    hasError.value ? "錯誤" : locationStore.watching ? "導航中" : "我的位置",
+  hasError.value ? "錯誤" : locationStore.watching ? "導航中" : "我的位置",
 );
 const locColor = computed(() =>
   hasError.value ? "error" : locationStore.watching ? "success" : "info",
@@ -48,9 +51,22 @@ async function handleLocClick() {
 
     <!-- 功能列 -->
     <div class="flex items-end gap-2">
+
+          <UButton
+        icon="i-lucide-filter"
+        size="md"
+        variant="soft"
+        color="primary"
+        @click="showFilter = true"
+      >
+        <span class="hidden sm:inline ml-1">篩選</span>
+      </UButton>
+
       <!-- 我的位置 / 導航中 -->
       <UButton
-        :icon="locationStore.watching ? 'i-lucide-navigation' : 'i-lucide-map-pinned'"
+        :icon="
+          locationStore.watching ? 'i-lucide-navigation' : 'i-lucide-map-pinned'
+        "
         size="md"
         variant="soft"
         :color="locColor"
@@ -88,7 +104,10 @@ async function handleLocClick() {
           mode="modal"
           afterSignInUrl="/"
           :appearance="{
-            elements: { button: 'bg-green-500 hover:bg-green-600 text-white rounded px-3 py-2' },
+            elements: {
+              button:
+                'bg-green-500 hover:bg-green-600 text-white rounded px-3 py-2',
+            },
           }"
         >
           <UButton icon="i-lucide-user" variant="soft" color="secondary">
@@ -99,4 +118,13 @@ async function handleLocClick() {
       <SignedIn><UserButton /></SignedIn>
     </div>
   </header>
+<UModal v-model:open="showFilter">
+  <template #content>
+    <div class="p-4 space-y-2">
+      <h2 class="text-lg font-bold">🚻 廁所篩選</h2>
+      <Filter @update:filters="(f: FilterOptions) => console.log('選擇條件', f)" />
+      <UButton block @click="showFilter = false">關閉</UButton>
+    </div>
+  </template>
+</UModal>
 </template>
