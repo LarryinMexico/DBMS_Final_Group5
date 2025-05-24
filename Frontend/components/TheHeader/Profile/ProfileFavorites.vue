@@ -8,13 +8,13 @@ const props = defineProps<{ userId: string }>();
 // favourites of the profile owner (used to決定要顯示哪些廁所卡片)
 const ownerFavoriteIds = ref<number[]>([]);
 // favourites of the logged-in user (用來決定按鈕 UI 與 toggle 行為)
-const myFavoriteSet   = ref<Set<number>>(new Set());
+const myFavoriteSet = ref<Set<number>>(new Set());
 
 const toilets = ref<any[]>([]);
-const stats   = ref<Record<number, { avg_rating: number; count: number }>>({});
+const stats = ref<Record<number, { avg_rating: number; count: number }>>({});
 
 const isLoading = ref(true);
-const toast     = useToast();
+const toast = useToast();
 const userStore = useUserStore();
 
 const isSelf = computed(() => props.userId === String(userStore.id)); // 是否在看自己的頁面
@@ -23,18 +23,18 @@ const isSelf = computed(() => props.userId === String(userStore.id)); // 是否�
 const fetchOwnerFavoritesAndToilets = async () => {
   const res = await fetch(`${BASE_URL}/favorites/list/${props.userId}`);
   if (!res.ok) throw new Error("無法取得頁面擁有者的最愛");
-  const favRows      = await res.json();
+  const favRows = await res.json();
   ownerFavoriteIds.value = favRows.map((f: any) => f.toilet_id);
 
   // 只抓擁有者最愛對應的廁所資料
-  const toiletRes   = await Promise.all(
-    ownerFavoriteIds.value.map(id => fetch(`${BASE_URL}/toilets/${id}`)),
+  const toiletRes = await Promise.all(
+    ownerFavoriteIds.value.map((id) => fetch(`${BASE_URL}/toilets/${id}`)),
   );
-  toilets.value     = await Promise.all(toiletRes.map(r => r.json()));
+  toilets.value = await Promise.all(toiletRes.map((r) => r.json()));
 };
 
 const fetchMyFavorites = async () => {
-  if (!userStore.id) return;                       // 遊客直接跳過
+  if (!userStore.id) return; // 遊客直接跳過
   if (isSelf.value) {
     // 觀看自己時，直接沿用 ownerFavoriteIds
     myFavoriteSet.value = new Set(ownerFavoriteIds.value);
@@ -65,8 +65,8 @@ const toggleFavorite = async (toiletId: number) => {
   }
 
   const already = myFavoriteSet.value.has(toiletId);
-  const method  = already ? "DELETE" : "POST";
-  const url     = `${BASE_URL}/favorites/${already ? "delete" : "add"}`;
+  const method = already ? "DELETE" : "POST";
+  const url = `${BASE_URL}/favorites/${already ? "delete" : "add"}`;
 
   const res = await fetch(url, {
     method,
@@ -80,8 +80,9 @@ const toggleFavorite = async (toiletId: number) => {
   }
 
   // 更新自己的收藏集合
-  already ? myFavoriteSet.value.delete(toiletId)
-          : myFavoriteSet.value.add(toiletId);
+  already
+    ? myFavoriteSet.value.delete(toiletId)
+    : myFavoriteSet.value.add(toiletId);
 
   toast.add({
     title: already ? "已移除最愛" : "成功加入最愛",
@@ -97,10 +98,7 @@ const toggleFavorite = async (toiletId: number) => {
 /* ------------------------------ init ------------------------------- */
 onMounted(async () => {
   try {
-    await Promise.all([
-      fetchOwnerFavoritesAndToilets(),
-      fetchStats(),
-    ]);
+    await Promise.all([fetchOwnerFavoritesAndToilets(), fetchStats()]);
     await fetchMyFavorites();
   } catch (err) {
     console.error(err);
@@ -121,7 +119,9 @@ onMounted(async () => {
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-base font-bold">
           {{ toilet.title || "無名稱" }}
-          <span class="text-sm text-gray-400 ml-1">📍{{ toilet.floor }} 樓</span>
+          <span class="text-sm text-gray-400 ml-1"
+            >📍{{ toilet.floor }} 樓</span
+          >
         </h3>
       </div>
 
@@ -147,9 +147,7 @@ onMounted(async () => {
         <!-- 我的最愛按鈕（總是根據自己是否已收藏來顯示） -->
         <UButton
           v-if="!isLoading"
-          :label="
-            myFavoriteSet.has(toilet.id) ? '已加入' : '加入最愛'
-          "
+          :label="myFavoriteSet.has(toilet.id) ? '已加入' : '加入最愛'"
           :color="myFavoriteSet.has(toilet.id) ? 'success' : 'error'"
           variant="soft"
           icon="i-heroicons-heart"

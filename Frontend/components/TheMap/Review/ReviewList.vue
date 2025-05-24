@@ -97,7 +97,6 @@ const openUserModal = (userId: number) => {
   selectedUserId.value = userId;
   showUserModal.value = true;
 };
-
 </script>
 
 <template>
@@ -256,7 +255,7 @@ const openUserModal = (userId: number) => {
         <Profile
           :userId="selectedUserId?.toString() || ''"
           @close="showUserModal = false"
-          />
+        />
       </template>
     </UModal>
   </div>
