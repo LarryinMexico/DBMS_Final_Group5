@@ -3,9 +3,11 @@ import mapboxgl from "mapbox-gl";
 import { onMounted, ref, watch } from "vue";
 import { useBuildingStore } from "~/stores/building";
 import ToiletDrawer from "./ToiletDrawer.vue";
+import { useLocationStore } from "~/stores/location";
 
 const colorMode = useColorMode();
 const buildingStore = useBuildingStore();
+const locationStore = useLocationStore();
 
 const mapContainer = ref<HTMLElement | null>(null);
 const mapInstance = ref<mapboxgl.Map | null>(null);
@@ -52,9 +54,51 @@ async function renderBuildingMarkers() {
 
     new mapboxgl.Marker(el)
       .setLngLat([building.lng, building.lat])
-      .addTo(mapInstance.value! as any);
+      .addTo(mapInstance.value as unknown as mapboxgl.Map);
   });
 }
+
+ watch(
+   () => locationStore.panOnce,
+   (flag) => {
+     if (!flag || !mapInstance.value || !locationStore.hasPos) return;
+
+     const { lng, lat } = locationStore.coords!;
+
+       mapInstance.value.flyTo({
+         center: [lng, lat],
+         zoom: 17,
+         essential: true,
+       });
+
+    locationStore.panOnce = false;   // ↩️ 重置旗標
+   },
+ );
+ 
+const userMarker = ref<mapboxgl.Marker | null>(null);  
+ // 監聽座標，建立 / 更新 Marker
+watch(
+  () => locationStore.coords,
+  (pos) => {
+    if (!mapInstance.value || !pos) return;
+
+    // ① 已有 marker → 更新位置
+    if (userMarker.value) {
+      userMarker.value.setLngLat([pos.lng, pos.lat]);
+      return;
+    }
+
+    // ② 沒有 marker → 建立一顆
+    const el = document.createElement("div");
+    el.className = "user-marker";
+    el.style.cssText =
+      "width:14px;height:14px;border-radius:50%;background:#10b981;border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,.3)";
+    userMarker.value = new mapboxgl.Marker(el)
+      .setLngLat([pos.lng, pos.lat])
+      .addTo(mapInstance.value as unknown as mapboxgl.Map);
+  },
+  { immediate: true },
+);
 
 // ✅ 初始化地圖
 onMounted(async () => {

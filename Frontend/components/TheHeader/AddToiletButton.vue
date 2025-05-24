@@ -184,7 +184,7 @@ async function onSubmit(values) {
         variant="soft"
         @click="isOpen = true"
       >
-        新增廁所
+        <span class="hidden sm:inline ml-1">個人資料</span>
       </UButton>
       <template #body>
         <div class="flex flex-col h-full justify-start gap-y-10">
