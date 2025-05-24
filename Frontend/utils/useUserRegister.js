@@ -8,7 +8,6 @@ export function useUserRegister() {
   const { user } = useUser();
   const { getToken, isSignedIn } = useAuth();
   const userStore = useUserStore();
-
   watch(user, async (newUser) => {
     if (!newUser || !isSignedIn.value) return;
 
@@ -46,8 +45,11 @@ export function useUserRegister() {
         userStore.setUser({ ...userData, avatar: newUser.imageUrl });
       } else if (res.ok) {
         const userData = await res.json();
-        userStore.setUser({ ...userData, avatar: user.value.imageUrl });
-      } else {
+        userStore.setUser({
+          ...userData,
+          avatar: user.value.imageUrl,
+          isAdmin: user.value.publicMetadata.isAdmin ? true : false,
+        });
         throw new Error(`❌ 無法取得使用者資料，狀態碼 ${res.status}`);
       }
     } catch (err) {
