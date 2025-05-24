@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.schemas import toilet as schemas
 
+
 def get_toilet_by_id(db: Session, toilet_id: int):
     """根據 ID 獲取廁所"""
     query = text("SELECT * FROM toilet WHERE id = :toilet_id")
@@ -108,24 +109,55 @@ def delete_toilet(db: Session, toilet_id: int):
     
     return True
 
+
 def add_amenity_to_toilet(db: Session, toilet_id: int, amenity_id: int):
-    from app.models.amenity import Amenity
-    toilet = get_toilet_by_id(db, toilet_id)
-    amenity = db.query(Amenity).filter(Amenity.id == amenity_id).first()
-    if toilet and amenity:
-        toilet.amenities.append(amenity)
-        db.commit()
-        db.refresh(toilet)
-        return toilet
-    return None
+    # 先檢查對應資料是否存在
+    toilet_exists = db.execute(
+        text("SELECT 1 FROM toilet WHERE id = :tid"),
+        {"tid": toilet_id}
+    ).scalar()
+
+    amenity_exists = db.execute(
+        text("SELECT 1 FROM amenity WHERE id = :aid"),
+        {"aid": amenity_id}
+    ).scalar()
+
+    if not (toilet_exists and amenity_exists):
+        return None
+
+    # 確認是否已存在關聯
+    exists = db.execute(
+        text("SELECT 1 FROM has WHERE toilet_id = :tid AND amenity_id = :aid"),
+        {"tid": toilet_id, "aid": amenity_id}
+    ).scalar()
+
+    if exists:
+        return {"message": "Amenity already added to toilet"}
+
+    # 插入新關聯
+    db.execute(
+        text("INSERT INTO has (toilet_id, amenity_id) VALUES (:tid, :aid)"),
+        {"tid": toilet_id, "aid": amenity_id}
+    )
+    db.commit()
+    return {"message": "Amenity added to toilet"}
+
 
 def remove_amenity_from_toilet(db: Session, toilet_id: int, amenity_id: int):
-    from app.models.amenity import Amenity
-    toilet = get_toilet_by_id(db, toilet_id)
-    amenity = db.query(Amenity).filter(Amenity.id == amenity_id).first()
-    if toilet and amenity and amenity in toilet.amenities:
-        toilet.amenities.remove(amenity)
-        db.commit()
-        db.refresh(toilet)
-        return toilet
-    return None
+    # 檢查關聯是否存在
+    exists = db.execute(
+        text("SELECT 1 FROM has WHERE toilet_id = :tid AND amenity_id = :aid"),
+        {"tid": toilet_id, "aid": amenity_id}
+    ).scalar()
+
+    if not exists:
+        return None
+
+    # 執行刪除
+    db.execute(
+        text("DELETE FROM has WHERE toilet_id = :tid AND amenity_id = :aid"),
+        {"tid": toilet_id, "aid": amenity_id}
+    )
+    db.commit()
+    return {"message": "Amenity removed from toilet"}
+

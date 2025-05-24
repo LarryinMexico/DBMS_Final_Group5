@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DECIMAL
 from sqlalchemy.orm import relationship
 from app.db.base import Base
+from app.models.has import has 
 
 class Amenity(Base):
     __tablename__ = "amenity"
@@ -11,6 +12,6 @@ class Amenity(Base):
     # 建立與Toilet的一對多關係
     toilets = relationship(
             "Toilet",
-            secondary="has",
+            secondary=has   ,
             back_populates="amenities"
         )

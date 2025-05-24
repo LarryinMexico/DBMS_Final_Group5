@@ -2,6 +2,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.base import Base
+from app.models.has import has 
 
 class Toilet(Base):
     __tablename__ = "toilet"
@@ -21,6 +22,6 @@ class Toilet(Base):
     # 建立與 Review 的一對多關係
     reviews = relationship("Review", back_populates="toilet")
     # 建立與 Amenity 的多對多關係
-    amenities = relationship("Amenity", secondary="has", back_populates="toilets")
+    amenities = relationship("Amenity", secondary=has, back_populates="toilets")
     # 建立與 Review 的一對多關係
     reports = relationship("Report", back_populates="toilet")

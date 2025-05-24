@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -97,14 +98,12 @@ async def remove_amenity_from_toilet(
 
 # 取得特定廁所的所有設施
 @router.get("/toilet/{toilet_id}/amenities", response_model=List[schemas.Amenity])
-async def get_toilet_amenities(
-    toilet_id: int = Path(..., description="廁所 ID"),
-    db: Session = Depends(get_db)
-):
-    """
-    取得特定廁所的所有設施
-    """
-    toilet = crud_toilet.get_toilet_by_id(db, toilet_id)
-    if not toilet:
-        raise HTTPException(status_code=404, detail="Toilet not found")
-    return toilet.amenities
+def get_toilet_amenities(toilet_id: int, db: Session = Depends(get_db)):
+    query = text("""
+        SELECT a.id, a.name
+        FROM amenity a
+        JOIN has h ON h.amenity_id = a.id
+        WHERE h.toilet_id = :tid
+    """)
+    result = db.execute(query, {"tid": toilet_id})
+    return [dict(row._mapping) for row in result.fetchall()]
