@@ -14,6 +14,7 @@ const mapInstance = ref<mapboxgl.Map | null>(null);
 
 const drawerOpen = ref(false);
 const selectedBuilding = ref<{ name: string; toilets: any[] } | null>(null);
+const isDark = computed(() => colorMode.value === "dark");
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoiY2h1YW5nMDkxIiwiYSI6ImNtOTE3NTZldzB2cWYyanNraGh1dGkzdzMifQ.IqUIwZ1dEf7Prbnb4bMeng";
@@ -30,16 +31,48 @@ async function renderBuildingMarkers() {
 
   buildingStore.buildings.forEach((building: any) => {
     const el = document.createElement("div");
-    el.className = "building-marker";
-    el.style.width = "12px";
-    el.style.height = "12px";
-    el.style.backgroundColor = "#3b82f6";
-    el.style.borderRadius = "50%";
-    el.style.cursor = "pointer";
 
-    // 👇 在點擊時才去 fetch 廁所資料與打開 drawer
+    el.innerText = "🚻";
+
+    // 判斷主題
+    const isDarkMode = document.documentElement.classList.contains("dark");
+    const borderColor = isDarkMode ? "#fff" : "#3b82f6";
+    const hoverBorderColor = isDarkMode ? "#ffffff" : "#1d4ed8"; // 更明顯的對比色
+
+    // 🧼 標準樣式（白底圓框）
+    el.style.cssText = `
+      font-size: 20px;
+      background-color: white;
+      color: black;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      line-height: 1;
+      padding: 4px;
+      cursor: pointer;
+      border: 2px solid ${borderColor};
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+      user-select: none;
+    `;
+
+    // ✅ Hover: 邊框變色、陰影加深
+    el.addEventListener("mouseenter", () => {
+      el.style.border = `2px solid ${hoverBorderColor}`;
+      el.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.3)";
+    });
+
+    el.addEventListener("mouseleave", () => {
+      el.style.border = `2px solid ${borderColor}`;
+      el.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.2)";
+    });
+
+    el.title = building.name;
+
     el.addEventListener("click", async () => {
-      console.log("clicked", building.name);
       const toiletsRes = await fetch(
         `https://toilet-api-347656239330.asia-east1.run.app/api/toilets/building/${building.id}`,
       );
@@ -57,6 +90,7 @@ async function renderBuildingMarkers() {
       .addTo(mapInstance.value as unknown as mapboxgl.Map);
   });
 }
+
 
  watch(
    () => locationStore.panOnce,
@@ -147,10 +181,3 @@ watch(colorMode, () => {
   />
   <div ref="mapContainer" class="w-full h-[calc(100vh-4rem)]" />
 </template>
-
-<style scoped>
-.building-marker {
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-}
-</style>
