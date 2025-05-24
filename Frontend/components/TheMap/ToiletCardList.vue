@@ -209,6 +209,7 @@ const submitReport = async () => {
           v-model="reportDesc"
           placeholder="請輸入問題描述，例如設備壞掉、無法使用等"
           autoresize
+          class="w-full"
         />
         <div class="flex justify-end gap-2">
           <UButton
