@@ -1,33 +1,37 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.schemas import review as schemas
+from datetime import datetime
 
 # 新增 review
 def create_review(db: Session, review: schemas.ReviewCreate):
     """創建新評論"""
     review_data = review.dict()
-    
+
+    # ✨ 補上時間戳
+    now = datetime.utcnow()
+    review_data["createAt"] = now
+    review_data["updateAt"] = now
+
     # 動態構建插入語句
     columns = list(review_data.keys())
     placeholders = [f":{col}" for col in columns]
-    
+
     insert_query = text(f"""
         INSERT INTO review ({', '.join(columns)}) 
         VALUES ({', '.join(placeholders)})
     """)
-    
-    # 執行插入
+
     result = db.execute(insert_query, review_data)
     db.commit()
-    
-    # 取得插入記錄的 ID
+
     inserted_id = result.lastrowid
-    
+
     # 查詢剛插入的記錄
     select_query = text("SELECT * FROM review WHERE id = :id")
     result = db.execute(select_query, {"id": inserted_id})
     row = result.fetchone()
-    
+
     if row:
         return dict(row._mapping)
     return None
