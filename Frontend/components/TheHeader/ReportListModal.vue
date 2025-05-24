@@ -128,17 +128,16 @@ const getItems = (reportId: number) => {
 </script>
 
 <template>
-  <UModal v-model:open="props.open"
-  >
-  <template #header>
-          <h2 class="text-xl font-bold">🔧 報修列表</h2>
-          <UButton
-            icon="i-lucide-x"
-            variant="link"
-            class="absolute right-4 top-4"
-            @click="$emit('close')"
-          />
-          </template>
+  <UModal v-model:open="props.open">
+    <template #header>
+      <h2 class="text-xl font-bold">🔧 報修列表</h2>
+      <UButton
+        icon="i-lucide-x"
+        variant="link"
+        class="absolute right-4 top-4"
+        @click="$emit('close')"
+      />
+    </template>
 
     <template #body>
       <div class="p-4 space-y-3">

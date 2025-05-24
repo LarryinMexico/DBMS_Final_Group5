@@ -15,6 +15,12 @@ const props = defineProps<{
   }>;
 }>();
 
+interface Amenity {
+  id: number;
+  name: string;
+  available: boolean; // ✅ 是否已綁定在此廁所上
+}
+
 const emit = defineEmits(["select"]);
 
 const favorites = ref<Set<number>>(new Set());
@@ -23,6 +29,64 @@ const toast = useToast();
 const isLoading = ref(true);
 const isReporting = ref(false);
 const isAdmin = computed(() => userStore?.isAdmin);
+
+/* Amenity 相關 */
+const selectedTab = ref<"report" | "amenity">("report");
+const allAmenities = ref<Amenity[]>([]); // 所有備品項目
+const toiletAmenities = ref<Set<number>>(new Set()); // 目前此廁所的已選 amenity_id
+
+const fetchAmenityData = async (toiletId: number) => {
+  // 所有備品種類
+  const allRes = await fetch(`${BASE_URL}/amenities/`);
+  const all = await allRes.json();
+  allAmenities.value = all;
+
+  // 該廁所的備品
+  const assignedRes = await fetch(
+    `${BASE_URL}/amenities/toilet/${toiletId}/amenities`,
+  );
+  const assigned = await assignedRes.json();
+  toiletAmenities.value = new Set(assigned.map((a: any) => a.id));
+  // ✅ 預設勾選（重點）
+  selectedAmenities.value = [...toiletAmenities.value];
+  console.log("已載入備品資料", {
+    allAmenities: all,
+    selectedAmenities: selectedAmenities.value,
+  });
+};
+
+const saveAmenities = async () => {
+  const toiletId = reportToilet.value?.id;
+  if (!toiletId) return;
+
+  const prevSet = new Set(toiletAmenities.value);
+  const nextSet = new Set(selectedAmenities.value);
+
+  const toAdd = [...nextSet].filter((id) => !prevSet.has(id));
+  const toRemove = [...prevSet].filter((id) => !nextSet.has(id));
+
+  await Promise.all([
+    ...toAdd.map((id) =>
+      fetch(`${BASE_URL}/amenities/toilet/${toiletId}/amenity/${id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+    ),
+    ...toRemove.map((id) =>
+      fetch(`${BASE_URL}/amenities/toilet/${toiletId}/amenity/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+    ),
+  ]);
+
+  toiletAmenities.value = new Set(selectedAmenities.value); // 更新本地 cache
+  toast.add({ title: "備品設定已儲存", color: "success" });
+};
 
 const editToilet = ref<{ id: number; title?: string } | null>(null);
 const editTitle = ref("");
@@ -104,6 +168,12 @@ const showReportModal = ref(false);
 const reportToilet = ref<{ id: number; title?: string } | null>(null);
 const reportDesc = ref("");
 
+watch(reportToilet, (newToilet) => {
+  if (newToilet?.id && isAdmin.value) {
+    fetchAmenityData(newToilet.id);
+  }
+});
+
 const submitReport = async () => {
   const userId = userStore?.id;
   if (!userId || !reportToilet.value) return;
@@ -162,6 +232,49 @@ const submitEdit = async () => {
     editTitle.value = "";
   } catch (err) {
     toast.add({ title: "編輯失敗", color: "error" });
+  }
+};
+
+const selectedAmenities = ref<Amenity["id"][]>([]);
+
+const handleToggle = (id: number, checked: boolean) => {
+  if (checked) {
+    selectedAmenities.value.push(id);
+  } else {
+    selectedAmenities.value = selectedAmenities.value.filter((i) => i !== id);
+  }
+};
+const newAmenityName = ref("");
+const isAddingAmenity = ref(false);
+
+const addAmenity = async () => {
+  const name = newAmenityName.value.trim();
+  if (!name) return;
+
+  isAddingAmenity.value = true;
+  try {
+    const res = await fetch(`${BASE_URL}/amenities/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ✅ Clerk JWT
+      },
+      body: JSON.stringify({ name }),
+    });
+
+    if (!res.ok) throw new Error("新增失敗");
+
+    toast.add({ title: "備品已新增", color: "success" });
+    newAmenityName.value = "";
+
+    // ⏬ 重新載入備品資料
+    if (reportToilet.value?.id) {
+      await fetchAmenityData(reportToilet.value.id);
+    }
+  } catch (err) {
+    toast.add({ title: "新增失敗", color: "error" });
+  } finally {
+    isAddingAmenity.value = false;
   }
 };
 </script>
@@ -226,7 +339,7 @@ const submitEdit = async () => {
             showReportModal = true;
           "
         >
-          我要回報
+          回報問題
         </UButton>
 
         <UButton
@@ -251,25 +364,70 @@ const submitEdit = async () => {
   </div>
   <UModal v-model:open="showReportModal">
     <template #content>
-      <div class="p-4 space-y-3">
-        <h2 class="text-lg font-bold">
-          回報問題：{{ reportToilet?.title || "（無名稱）" }}
-        </h2>
-        <UTextarea
-          v-model="reportDesc"
-          placeholder="請輸入問題描述，例如設備壞掉、無法使用等"
-          autoresize
-          class="w-full"
+      <div class="p-4 space-y-4">
+        <UTabs
+          v-model="selectedTab"
+          :items="[
+            { label: '我要回報', value: 'report' },
+            { label: '備品管理', value: 'amenity', disabled: !isAdmin },
+          ]"
         />
-        <div class="flex justify-end gap-2">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            @click="showReportModal = false"
-          >
-            取消
-          </UButton>
-          <UButton color="primary" @click="submitReport"> 送出回報 </UButton>
+
+        <!-- Tab: 回報 -->
+        <div v-if="selectedTab === 'report'" class="space-y-3">
+          <h2 class="text-lg font-bold">
+            回報問題：{{ reportToilet?.title || "（無名稱）" }}
+          </h2>
+          <UTextarea
+            v-model="reportDesc"
+            placeholder="請輸入問題描述，例如設備壞掉、無法使用等"
+            autoresize
+            class="w-full"
+          />
+          <div class="flex justify-end gap-2">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              @click="showReportModal = false"
+            >
+              取消
+            </UButton>
+            <UButton color="primary" @click="submitReport">送出回報</UButton>
+          </div>
+        </div>
+
+        <!-- Tab: 備品管理 -->
+        <div v-if="selectedTab === 'amenity'" class="space-y-3">
+          <h2 class="text-lg font-bold">備品管理</h2>
+
+          <!-- 新增備品欄位 -->
+          <div class="flex items-center gap-2">
+            <UInput
+              v-model="newAmenityName"
+              placeholder="輸入備品名稱"
+              class="flex-1"
+            />
+            <UButton
+              color="primary"
+              :loading="isAddingAmenity"
+              @click="addAmenity"
+            >
+              新增
+            </UButton>
+          </div>
+
+          <!-- 備品勾選列表 -->
+          <UCheckbox
+            v-for="item in allAmenities"
+            :key="item.id"
+            :label="item.name"
+            :model-value="selectedAmenities.includes(item.id)"
+            @update:model-value="handleToggle(item.id, $event as boolean)"
+          />
+
+          <div class="flex justify-end pt-2">
+            <UButton color="primary" @click="saveAmenities">儲存</UButton>
+          </div>
         </div>
       </div>
     </template>
