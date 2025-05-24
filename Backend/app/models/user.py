@@ -29,3 +29,16 @@ class User(Base):
     # 建立與 Reaction 的一對多關係
     reactions = relationship("Reaction", back_populates="user") 
 
+    # 追蹤別人的關係（我追蹤了誰）
+    following_relations = relationship(
+        "Follow",
+        foreign_keys="[Follow.following_id]",
+        back_populates="following",
+    )
+
+    # 被追蹤的關係（誰追蹤我）
+    followed_relations = relationship(
+        "Follow",
+        foreign_keys="[Follow.followed_id]",
+        back_populates="followed",
+    )
