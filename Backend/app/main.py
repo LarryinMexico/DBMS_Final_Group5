@@ -1,6 +1,6 @@
 # app/main.py
 from fastapi import FastAPI
-from app.routers import user, toilet, building, favorite, review, reaction, follow
+from app.routers import user, toilet, building, favorite, review, reaction, follow report
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,6 +12,7 @@ app.include_router(favorite.router, prefix="/favorites", tags=["Favorites"])
 app.include_router(review.router, prefix="/reviews", tags=["Reviews"])
 app.include_router(reaction.router, prefix="/reactions", tags=["Reactions"])
 app.include_router(follow.router, prefix="/follows", tags=["Follows"])
+app.include_router(report.router, prefix="/reports", tags=["Reports"])
 
 app.add_middleware(
     CORSMiddleware,

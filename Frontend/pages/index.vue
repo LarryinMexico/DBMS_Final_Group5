@@ -1,12 +1,12 @@
 <script setup>
-import { useUserRegister } from '@/utils/useUserRegister'
+import { useUserRegister } from "@/utils/useUserRegister";
 
-useUserRegister()
+useUserRegister();
 </script>
 
 <template>
-<UApp>
-  <TheHeader />
-  <TheMap />
-</UApp>
+  <UApp>
+    <TheHeader />
+    <TheMap />
+  </UApp>
 </template>

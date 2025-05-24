@@ -1,45 +1,49 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { BASE_URL } from '@/constants'
-import { useUserStore } from '@/stores/userStore'
+import { ref } from "vue";
+import { BASE_URL } from "@/constants";
+import { useUserStore } from "@/stores/user";
 
-const props = defineProps<{ toiletId: number }>()
-const emit = defineEmits<{ (e: 'submitted'): void }>()
+const props = defineProps<{ toiletId: number }>();
+const emit = defineEmits<{ (e: "submitted"): void }>();
 
-const rating = ref(0)
-const hoverRating = ref(0)
-const comment = ref('')
-const toast = useToast()
-const user = useUserStore()
-const icons = Array.from({ length: 5 }, (_, i) => i + 1)
+const rating = ref(0);
+const hoverRating = ref(0);
+const comment = ref("");
+const toast = useToast();
+const user = useUserStore();
+const icons = Array.from({ length: 5 }, (_, i) => i + 1);
 
 const submitReview = async () => {
-  if (!user.id || rating.value === 0) return
+  if (!user.id || rating.value === 0) return;
 
   try {
     const res = await fetch(`${BASE_URL}/reviews/`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         user_id: user.id,
         toilet_id: props.toiletId,
         rating: rating.value,
-        comment: comment.value
-      })
-    })
+        comment: comment.value,
+      }),
+    });
 
-    if (!res.ok) throw new Error('評論送出失敗')
+    if (!res.ok) throw new Error("評論送出失敗");
 
-    toast.add({ title: '評論送出成功', color: 'success' })
-    rating.value = 0
-    comment.value = ''
-    emit('submitted')
+    toast.add({ title: "評論送出成功", color: "success" });
+    rating.value = 0;
+    comment.value = "";
+    emit("submitted");
   } catch (error) {
-    toast.add({ title: '評論送出失敗', description: '請稍後再試', color: 'error' })
+    toast.add({
+      title: "評論送出失敗",
+      description: "請稍後再試",
+      color: "error",
+    });
   }
-}
+};
 </script>
 
 <template>
@@ -58,11 +62,15 @@ const submitReview = async () => {
         :key="n"
         name="i-heroicons-star-solid"
         class="w-6 h-6 cursor-pointer transition-colors"
-        :class="(hoverRating || rating) >= n ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-300'"
+        :class="
+          (hoverRating || rating) >= n
+            ? 'text-yellow-400'
+            : 'text-gray-400 hover:text-yellow-300'
+        "
         @mouseenter="hoverRating = n"
         @mouseleave="hoverRating = 0"
         @click="rating = n"
-        />
+      />
     </div>
 
     <!-- 評論輸入 -->
