@@ -14,17 +14,23 @@ interface Report {
   toiletTitle?: string;
   description: string;
   status: "pending" | "resolved" | "rejected";
+  user_id: number;
+  userInfo?: {
+    name: string;
+    avatarUrl: string;
+  };
 }
 
 const reports = ref<Report[]>([]);
 
 // 分頁邏輯
 const currentPage = ref(1);
-const pageCount = 5;
+const perPage = 3; // 每頁顯示 5 筆
+const pageCount = computed(() => Math.ceil(reports.value.length / perPage));
 
 const paginatedReports = computed(() => {
-  const start = (currentPage.value - 1) * pageCount;
-  return reports.value.slice(start, start + pageCount);
+  const start = (currentPage.value - 1) * perPage;
+  return reports.value.slice(start, start + perPage);
 });
 
 const statusColors: Record<Report["status"], "warning" | "success" | "error"> =
@@ -36,24 +42,31 @@ const statusColors: Record<Report["status"], "warning" | "success" | "error"> =
 
 const fetchReports = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/reports/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const res = await fetch(`${BASE_URL}/reports/`);
     const rawData = await res.json();
 
-    // 👉 逐筆補 toiletTitle
     const filled = await Promise.all(
       rawData.map(async (r: any) => {
-        const toiletRes = await fetch(`${BASE_URL}/toilets/${r.toilet_id}`);
-        const toilet = await toiletRes.json();
+        const [toiletRes, userRes] = await Promise.all([
+          fetch(`${BASE_URL}/toilets/${r.toilet_id}`),
+          fetch(`${BASE_URL}/users/4`),
+        ]);
+        const [toilet, user] = await Promise.all([
+          toiletRes.json(),
+          userRes.json(),
+        ]);
+
         return {
           id: r.id,
           toiletId: r.toilet_id,
+          user_id: r.user_id,
           description: r.description,
           status: r.status,
           toiletTitle: toilet.title ?? "（無名稱）",
+          userInfo: {
+            name: user.name,
+            avatarUrl: user.avatarUrl,
+          },
         } as Report;
       }),
     );
@@ -122,8 +135,26 @@ const getItems = (reportId: number) => {
 
         <UCard v-for="r in paginatedReports" :key="r.id">
           <template #header>
-            <div class="font-medium text-base mb-1">{{ r.toiletTitle }}</div>
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-medium text-base">
+                  {{ r.toiletTitle }}
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="text-xs text-gray-400">
+                  回報者：{{ r.userInfo?.name || "未知使用者" }}
+                </div>
+                <UAvatar
+                  v-if="r.userInfo?.avatarUrl"
+                  :src="r.userInfo.avatarUrl"
+                  :alt="r.userInfo.name"
+                  size="sm"
+                />
+              </div>
+            </div>
           </template>
+
           <div class="text-sm text-gray-500 mb-2">{{ r.description }}</div>
 
           <template #footer>
@@ -152,7 +183,7 @@ const getItems = (reportId: number) => {
         <div class="flex justify-center pt-2">
           <UPagination
             v-model:page="currentPage"
-            :page-count="pageCount"
+            :items-per-page="pageCount"
             :total="reports.length"
           />
         </div>
