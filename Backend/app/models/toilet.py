@@ -20,3 +20,6 @@ class Toilet(Base):
 
     # 建立與 Review 的一對多關係
     reviews = relationship("Review", back_populates="toilet")
+
+    # 建立與 Review 的一對多關係
+    reports = relationship("Report", back_populates="toilet")
