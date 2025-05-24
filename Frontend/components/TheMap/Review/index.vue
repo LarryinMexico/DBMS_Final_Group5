@@ -13,16 +13,14 @@ const triggerReload = () => {
   reloadReviews.value++;
 };
 
-const reports = ref<
-  Array<{ id: number; description: string; status: string }>
->([]);
+const reports = ref<Array<{ id: number; description: string; status: string }>>(
+  [],
+);
 const isLoadingReports = ref(true);
 
 const fetchReports = async () => {
   try {
-    const res = await fetch(
-      `${BASE_URL}/reports/toilet/${props.toilet.id}`
-    );
+    const res = await fetch(`${BASE_URL}/reports/toilet/${props.toilet.id}`);
     if (!res.ok) throw new Error("無法取得報修資料");
     const data = await res.json();
     reports.value = data.filter((r: any) => r.status === "pending"); // 只取待處理的
@@ -36,21 +34,18 @@ const fetchReports = async () => {
 onMounted(() => {
   fetchReports();
 });
-
 </script>
 
 <template>
   <div class="space-y-4">
-  <UCard v-if="!isLoadingReports && reports.length > 0">
-  <template #header>
-    🚧 正在處理問題
-  </template>
-  <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-    <li v-for="r in reports" :key="r.id" class="pl-2 list-disc">
-      {{ r.description }}
-    </li>
-  </ul>
-</UCard>
+    <UCard v-if="!isLoadingReports && reports.length > 0">
+      <template #header> 🚧 正在處理問題 </template>
+      <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+        <li v-for="r in reports" :key="r.id" class="pl-2 list-disc">
+          {{ r.description }}
+        </li>
+      </ul>
+    </UCard>
 
     <ReviewForm :toilet-id="props.toilet.id" @submitted="triggerReload" />
     <ReviewList :toilet-id="props.toilet.id" :reload="reloadReviews" />

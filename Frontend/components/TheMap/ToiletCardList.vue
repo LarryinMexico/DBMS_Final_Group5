@@ -2,10 +2,11 @@
 import { useToast } from "#imports";
 import { BASE_URL } from "@/constants/index.js";
 import { useUserStore } from "@/stores/user";
+import { useAuth } from "@clerk/vue";
 
 const colorMode = useColorMode();
 
-defineProps<{
+const props = defineProps<{
   toilets: Array<{
     id: number;
     floor: string | number;
@@ -21,6 +22,14 @@ const stats = ref<Record<number, { avg_rating: number; count: number }>>({});
 const toast = useToast();
 const isLoading = ref(true);
 const isReporting = ref(false);
+const isAdmin = computed(() => userStore?.isAdmin);
+
+const editToilet = ref<{ id: number; title?: string } | null>(null);
+const editTitle = ref("");
+const isEditing = computed(() => !!editToilet.value);
+
+const { getToken } = useAuth();
+const token = await getToken.value();
 
 const fetchFavorites = async () => {
   const userId = userStore?.id;
@@ -128,6 +137,33 @@ const submitReport = async () => {
     isReporting.value = false;
   }
 };
+
+const submitEdit = async () => {
+  if (!editToilet.value) return;
+  try {
+    const res = await fetch(`${BASE_URL}/toilets/${editToilet.value.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ title: editTitle.value }),
+    });
+
+    if (!res.ok) throw new Error("編輯失敗");
+
+    toast.add({ title: "廁所名稱已更新", color: "success" });
+
+    // 立即更新原本列表內的名稱（local update）
+    const target = props.toilets.find((t) => t.id === editToilet.value?.id);
+    if (target) target.title = editTitle.value;
+
+    editToilet.value = null;
+    editTitle.value = "";
+  } catch (err) {
+    toast.add({ title: "編輯失敗", color: "error" });
+  }
+};
 </script>
 
 <template>
@@ -192,6 +228,20 @@ const submitReport = async () => {
         >
           我要回報
         </UButton>
+
+        <UButton
+          icon="i-heroicons-pencil-square"
+          size="xs"
+          variant="soft"
+          color="primary"
+          :disabled="!isAdmin"
+          @click.stop="
+            editToilet = toilet;
+            editTitle = toilet.title || '';
+          "
+        >
+          編輯
+        </UButton>
       </div>
     </UCard>
 
@@ -220,6 +270,25 @@ const submitReport = async () => {
             取消
           </UButton>
           <UButton color="primary" @click="submitReport"> 送出回報 </UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <UModal v-model:open="isEditing">
+    <template #content>
+      <div class="p-4 space-y-3">
+        <h2 class="text-lg font-bold">編輯廁所名稱</h2>
+        <UInput
+          v-model="editTitle"
+          placeholder="請輸入新的名稱"
+          class="w-full"
+        />
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="editToilet = null">
+            取消
+          </UButton>
+          <UButton color="primary" @click="submitEdit">儲存</UButton>
         </div>
       </div>
     </template>
