@@ -26,7 +26,7 @@ const reports = ref<Report[]>([]);
 // 分頁邏輯
 const currentPage = ref(1);
 const perPage = 3; // 每頁顯示 5 筆
-const pageCount = computed(() => Math.ceil(reports.value.length / perPage));
+const totalReports = computed(() => reports.value.length);
 
 const paginatedReports = computed(() => {
   const start = (currentPage.value - 1) * perPage;
@@ -191,8 +191,8 @@ const getItems = (reportId: number) => {
         <div class="flex justify-center pt-2">
           <UPagination
             v-model:page="currentPage"
-            :items-per-page="pageCount"
-            :total="reports.length"
+            :items-per-page="perPage"
+            :total="totalReports"
           />
         </div>
       </div>
