@@ -164,17 +164,20 @@ const emit = defineEmits<{
       </div>
       <div class="flex items-center space-x-1">
         <UIcon name="i-heroicons-chat-bubble-left-right" />
-        <span>{{ stats[toilet.id]?.count || 0 }} 則</span>
+        <span>{{ stats[toilet.id]?.count || 0 }}</span>
       </div>
       <UButton
         v-if="!isLoading"
-        :label="favorites.has(toilet.id) ? '已加入' : '我的最愛'"
         :color="favorites.has(toilet.id) ? 'success' : 'error'"
         variant="soft"
         icon="i-heroicons-heart"
         size="xs"
         @click.stop="toggleFavorite(toilet.id)"
-      />
+      >
+        <span class="hidden sm:inline ml-1"> 
+          {{ favorites.has(toilet.id) ? "已加入最愛" : "加入最愛" }}
+        </span>
+      </UButton>
       <!-- 距離顯示 -->
       <p v-if="walkingDistance !== null" class="text-xs text-gray-400">
         📍 約 {{ walkingDistance }} 公尺（步行）
