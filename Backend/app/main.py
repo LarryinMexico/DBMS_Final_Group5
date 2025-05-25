@@ -39,7 +39,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-@app.middleware("http")
+@fastapi_app.middleware("http")
 async def catch_all(request, call_next):
     try:
         response = await call_next(request)
