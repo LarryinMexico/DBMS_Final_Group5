@@ -96,16 +96,21 @@ const toggleFavorite = async (toiletId: number) => {
 };
 
 /* ------------------------------ init ------------------------------- */
-onMounted(async () => {
-  try {
-    await Promise.all([fetchOwnerFavoritesAndToilets(), fetchStats()]);
-    await fetchMyFavorites();
-  } catch (err) {
-    console.error(err);
-  } finally {
-    isLoading.value = false;
-  }
-});
+watch(
+  () => props.userId,
+  async () => {
+    isLoading.value = true;
+    try {
+      await Promise.all([fetchOwnerFavoritesAndToilets(), fetchStats()]);
+      await fetchMyFavorites();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      isLoading.value = false;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

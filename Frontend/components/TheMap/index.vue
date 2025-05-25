@@ -4,17 +4,19 @@ import { onMounted, ref, watch } from "vue";
 import { useBuildingStore } from "~/stores/building";
 import ToiletDrawer from "./ToiletDrawer.vue";
 import { useLocationStore } from "~/stores/location";
+import { useUserModalStore } from "~/stores/userModal";
+import Profile from "@/components/TheHeader/Profile/index.vue";
 
 const colorMode = useColorMode();
 const buildingStore = useBuildingStore();
 const locationStore = useLocationStore();
+const userModal = useUserModalStore();
 
 const mapContainer = ref<HTMLElement | null>(null);
 const mapInstance = ref<mapboxgl.Map | null>(null);
 
 const drawerOpen = ref(false);
 const selectedBuilding = ref<{ name: string; toilets: any[] } | null>(null);
-const isDark = computed(() => colorMode.value === "dark");
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoiY2h1YW5nMDkxIiwiYSI6ImNtOTE3NTZldzB2cWYyanNraGh1dGkzdzMifQ.IqUIwZ1dEf7Prbnb4bMeng";
@@ -230,6 +232,7 @@ watch(colorMode, () => {
 </script>
 
 <template>
+
   <ToiletDrawer
     v-if="selectedBuilding"
     v-model:open="drawerOpen"
@@ -239,5 +242,14 @@ watch(colorMode, () => {
     :toilets="selectedBuilding.toilets"
     @close="drawerOpen = false"
   />
+  
+    <UModal v-model:open="userModal.isOpen">
+    <template #content>
+      <Profile
+        :userId="userModal.userId?.toString() || ''"
+        @close="userModal.close()"
+      />
+    </template>
+  </UModal>
   <div ref="mapContainer" class="w-full h-[calc(100vh-4rem)]" />
 </template>

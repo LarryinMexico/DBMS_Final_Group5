@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import { useReviews } from "@/utils/useReviews";
 import { BASE_URL } from "@/constants";
-import Profile from "@/components/TheHeader/Profile/index.vue";
 
 const props = defineProps<{ toiletId: number; reload: number }>();
 
@@ -31,7 +30,6 @@ const startEdit = (reviewId: number) => {
   editComment.value = review.comment;
   editRating.value = review.rating;
   showEditModal.value = true;
-  console.log("開始編輯評論", review);
 };
 
 const confirmEdit = async () => {
@@ -240,14 +238,6 @@ const userModal = useUserModalStore();
             <UButton label="儲存變更" color="primary" @click="confirmEdit" />
           </div>
         </div>
-      </template>
-    </UModal>
-    <UModal v-model:open="userModal.isOpen">
-      <template #content>
-        <Profile
-          :userId="userModal.userId?.toString() || ''"
-          @close="userModal.close()"
-        />
       </template>
     </UModal>
   </div>
