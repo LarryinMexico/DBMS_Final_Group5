@@ -11,6 +11,7 @@ const colorMode = useColorMode();
 const buildingStore = useBuildingStore();
 const locationStore = useLocationStore();
 const userModal = useUserModalStore();
+useShareLocation();
 
 const mapContainer = ref<HTMLElement | null>(null);
 const mapInstance = ref<mapboxgl.Map | null>(null);
@@ -229,6 +230,52 @@ watch(colorMode, () => {
     mapInstance.value.setStyle(getMapStyle());
   }
 });
+
+const { others } = useShareLocation();
+const otherMarkers = ref<Record<string, mapboxgl.Marker>>({});
+
+// 監聽 others 資料
+watch(
+  () => ({ ...others }), // ✅ 確保觸發變化偵測
+  (updated) => {
+    if (!mapInstance.value) return;
+
+    // 移除舊的 Marker
+    for (const marker of Object.values(otherMarkers.value)) {
+      marker.remove();
+    }
+    otherMarkers.value = {};
+
+    // 建立新的 Marker
+    Object.entries(updated).forEach(([user_id, user]) => {
+      const el = document.createElement("div");
+      el.className = "other-user-marker";
+      el.style.cssText = `
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-image: url('${user.avatarUrl}');
+        background-size: cover;
+        background-position: center;
+        border: 2px solid #3b82f6;
+        box-shadow: 0 0 4px rgba(0,0,0,.3);
+        cursor: pointer;
+      `;
+      el.title = user.name;
+
+      el.addEventListener("click", () => {
+        userModal.open(parseInt(user_id, 10));
+      });
+
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([user.location.lng, user.location.lat])
+        .addTo(mapInstance.value as unknown as mapboxgl.Map);
+
+      otherMarkers.value[user_id] = marker;
+    });
+  },
+  { deep: true, immediate: true },
+);
 </script>
 
 <template>

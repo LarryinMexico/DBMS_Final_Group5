@@ -13,7 +13,6 @@ import { BASE_URL } from "~/constants";
 import { useRouteStore } from "@/stores/useRouteStore";
 
 useSocket();
-useShareLocation();
 
 const routeStore = useRouteStore();
 
@@ -78,7 +77,6 @@ watch(showFilter, (val) => {
 });
 
 const { isSignedIn } = useUser();
-const showSignIn = ref(false);
 
 const showModal = computed(() => {
   return !isSignedIn.value;

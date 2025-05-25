@@ -35,7 +35,9 @@ onMounted(async () => {
     }
 
     // 累積評論數資料
-    const sortedTimestamps = timestamps.sort((a, b) => a.getTime() - b.getTime());
+    const sortedTimestamps = timestamps.sort(
+      (a, b) => a.getTime() - b.getTime(),
+    );
 
     timeline.value = sortedTimestamps.map((d, i) => ({
       timestamp: d.toLocaleString(),
@@ -62,7 +64,9 @@ onMounted(async () => {
 
 <template>
   <div v-if="loading">📊 資料讀取中...</div>
-  <div class="flex flex-col lg:flex-row flex-wrap gap-6 justify-center items-start">
+  <div
+    class="flex flex-col lg:flex-row flex-wrap gap-6 justify-center items-start"
+  >
     <!-- 評分分佈 -->
     <div class="flex-1 min-w-0 basis-[400px]">
       <ApexChart

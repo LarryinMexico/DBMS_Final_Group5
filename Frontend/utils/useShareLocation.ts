@@ -10,11 +10,25 @@ const socket = io(BASE_URL.replace("/api", ""), {
   withCredentials: true,
 });
 
+interface SharedUser {
+  user_id: string;
+  name: string;
+  avatarUrl: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
+}
+
+const others = reactive<Record<string, SharedUser>>({});
+
 export const useShareLocation = () => {
   const user = useUserStore();
   const locationStore = useLocationStore();
 
-  const othersLocation = reactive<Record<string, { lat: number; lng: number }>>({});
+  const othersLocation = reactive<Record<string, { lat: number; lng: number }>>(
+    {},
+  );
   const isSharing = ref(false);
   let shareInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -45,12 +59,16 @@ export const useShareLocation = () => {
 
   // 接收他人位置
   socket.on("location-updated", ({ user_id, location }) => {
-    if (user_id === user.id) return;
-    othersLocation[user_id] = location;
+    others[user_id] = {
+      user_id,
+      name: location.name,
+      avatarUrl: location.avatarUrl,
+      location,
+    };
   });
 
   return {
     isSharing,
-    othersLocation,
+    others,
   };
 };

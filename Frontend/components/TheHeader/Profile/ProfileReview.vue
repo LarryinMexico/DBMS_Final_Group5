@@ -57,8 +57,10 @@ onMounted(async () => {
 
 const sortedReviews = computed(() => {
   return [...enrichedReviews.value].sort((a, b) => {
-    const aVal = sortKey.value === "time" ? new Date(a.updateAt).getTime() : a.rating;
-    const bVal = sortKey.value === "time" ? new Date(b.updateAt).getTime() : b.rating;
+    const aVal =
+      sortKey.value === "time" ? new Date(a.updateAt).getTime() : a.rating;
+    const bVal =
+      sortKey.value === "time" ? new Date(b.updateAt).getTime() : b.rating;
     return sortOrder.value === "asc" ? aVal - bVal : bVal - aVal;
   });
 });
@@ -91,7 +93,9 @@ const paginatedReviews = computed(() => {
         :label="sortOrder === 'asc' ? '低到高' : '高到低'"
         size="sm"
         @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-        :icon="sortOrder === 'asc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'"
+        :icon="
+          sortOrder === 'asc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'
+        "
         variant="ghost"
       />
     </div>
@@ -115,11 +119,17 @@ const paginatedReviews = computed(() => {
                 <UIcon
                   v-for="n in 5"
                   :key="n"
-                  :name="n <= review.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                  :name="
+                    n <= review.rating
+                      ? 'i-heroicons-star-solid'
+                      : 'i-heroicons-star'
+                  "
                   class="w-4 h-4"
                 />
               </div>
-              <span class="text-xs text-gray-400">@ {{ review.toilet.title }}</span>
+              <span class="text-xs text-gray-400"
+                >@ {{ review.toilet.title }}</span
+              >
             </div>
 
             <UButton
@@ -136,7 +146,9 @@ const paginatedReviews = computed(() => {
             {{ review.comment || "無評論內容" }}
           </p>
 
-          <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
+          <div
+            class="flex justify-between items-center text-xs text-gray-400 mt-1"
+          >
             <span>{{ review.updateAt }}</span>
           </div>
         </div>
