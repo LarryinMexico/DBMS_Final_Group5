@@ -43,6 +43,9 @@ export function useUserRegister() {
 
         const userData = await postRes.json();
         userStore.setUser({ ...userData, avatar: newUser.imageUrl });
+
+        // 重新整理
+        window.location.reload();
       } else if (res.ok) {
         const userData = await res.json();
         userStore.setUser({

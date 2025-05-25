@@ -73,6 +73,13 @@ watch(showFilter, (val) => {
     results.value = [];
   }
 });
+
+const { isSignedIn } = useUser();
+const showSignIn = ref(false);
+
+const showModal = computed(() => {
+  return !isSignedIn.value;
+});
 </script>
 
 <template>
@@ -186,6 +193,22 @@ watch(showFilter, (val) => {
         </SignInButton>
       </SignedOut>
       <SignedIn><UserButton /></SignedIn>
+      <UModal v-model:open="showModal" :dismissible="false">
+          <template #header>
+            <div class="text-lg font-bold">請先登入</div>
+          </template>
+
+          <template #body>
+            <SignIn 
+              :appearance="{
+                elements: {
+                  button:
+                    'bg-green-500 hover:bg-green-600 text-white rounded px-3 py-2',
+                },
+              }"
+            />
+          </template>
+        </UModal>
     </div>
   </header>
   <UModal v-model:open="showFilter">
