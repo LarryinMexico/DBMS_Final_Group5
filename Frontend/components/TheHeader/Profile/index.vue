@@ -33,7 +33,6 @@ onMounted(async () => {
   if (!props.userId) return;
   await checkFollowing();
 
-
   try {
     const [userRes, reviewRes, followersRes, followingRes] = await Promise.all([
       fetch(`${BASE_URL}/users/${props.userId}`),
@@ -44,8 +43,10 @@ onMounted(async () => {
 
     if (userRes.ok) userInfo.value = await userRes.json();
     if (reviewRes.ok) reviews.value = await reviewRes.json();
-    if (followersRes.ok) followersCount.value = (await followersRes.json()).length;
-    if (followingRes.ok) followingCount.value = (await followingRes.json()).length;
+    if (followersRes.ok)
+      followersCount.value = (await followersRes.json()).length;
+    if (followingRes.ok)
+      followingCount.value = (await followingRes.json()).length;
   } catch (err) {
     console.error("❌ 載入失敗", err);
   } finally {
@@ -114,26 +115,40 @@ const toggleFollow = async () => {
 <template>
   <div class="space-y-4 p-6">
     <!-- 頭像與簡介 -->
-    <div class="flex flex-row items-center gap-4 justify-between ">
-    <div class="flex items-center gap-4">
-      <UAvatar :src="userInfo?.avatarUrl" :alt="userInfo?.name" size="lg" />
-      <div>
-        <h2 class="text-lg font-bold">{{ userInfo?.name ?? '匿名使用者' }}</h2>
-        <p class="text-sm text-gray-500">
-          {{ reviews.length }} 則評論・{{ followingCount }} 追蹤中・{{ followersCount }} 粉絲
-        </p>
+    <div class="flex flex-row items-center gap-4 justify-between">
+      <div class="flex items-center gap-4">
+        <UAvatar :src="userInfo?.avatarUrl" :alt="userInfo?.name" size="lg" />
+        <div>
+          <h2 class="text-lg font-bold">
+            {{ userInfo?.name ?? "匿名使用者" }}
+          </h2>
+          <p class="text-sm text-gray-500">
+            {{ reviews.length }} 則評論・{{ followingCount }} 追蹤中・{{
+              followersCount
+            }}
+            粉絲
+          </p>
+        </div>
       </div>
-    </div>
-    <div class="flex items-center gap-2">
-      <!-- 若瀏覽的不是自己，顯示追蹤按鈕 -->
-      <UButton v-if="userStore.id && +props.userId !== userStore.id" :color="isFollowing ? 'primary' : 'neutral'"
-        variant="soft" size="lg" icon="i-heroicons-user-plus" @click="toggleFollow">
-        {{ isFollowing ? '已追蹤' : '追蹤' }}
-      </UButton>
+      <div class="flex items-center gap-2">
+        <!-- 若瀏覽的不是自己，顯示追蹤按鈕 -->
+        <UButton
+          v-if="userStore.id && +props.userId !== userStore.id"
+          :color="isFollowing ? 'primary' : 'neutral'"
+          variant="soft"
+          size="lg"
+          icon="i-heroicons-user-plus"
+          @click="toggleFollow"
+        >
+          {{ isFollowing ? "已追蹤" : "追蹤" }}
+        </UButton>
       </div>
     </div>
 
-    <UTabs v-model="activeTab" :items="[{ label: '最愛' }, { label: '評論' }, { label: '統計' }]">
+    <UTabs
+      v-model="activeTab"
+      :items="[{ label: '最愛' }, { label: '評論' }, { label: '統計' }]"
+    >
       <template #content="{ item }">
         <div v-if="isLoading" class="text-sm text-gray-500 py-4">載入中...</div>
         <div v-else-if="item.label === '最愛'" class="space-y-2">

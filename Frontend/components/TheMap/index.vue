@@ -133,6 +133,67 @@ watch(
   { immediate: true },
 );
 
+const routeStore = useRouteStore();
+let routeLayerId = "route-layer";
+let routeSourceId = "route-source";
+watch(
+  () => routeStore.routeGeoJSON,
+  (geojson) => {
+    if (!mapInstance.value) return;
+
+    const map = mapInstance.value;
+
+    // 清理先前圖層與來源
+    if (map.getLayer(routeLayerId)) {
+      map.removeLayer(routeLayerId);
+    }
+    if (map.getSource(routeSourceId)) {
+      map.removeSource(routeSourceId);
+    }
+
+    if (geojson && geojson.features?.length > 0) {
+      map.addSource(routeSourceId, {
+        type: "geojson",
+        data: geojson,
+      });
+
+      map.addLayer({
+        id: routeLayerId,
+        type: "line",
+        source: routeSourceId,
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+        paint: {
+          "line-color": "#1d4ed8",
+          "line-width": 4,
+        },
+      });
+
+      const feature = geojson.features[0];
+      const type = feature.geometry.type;
+      let coords: number[][] = [];
+
+      if (type === "LineString") {
+        coords = feature.geometry.coordinates;
+      } else if (type === "MultiLineString") {
+        coords = feature.geometry.coordinates[0];
+      }
+
+      if (coords.length > 0) {
+        const lastCoord = coords[coords.length - 1];
+        map.flyTo({
+          center: [lastCoord[0], lastCoord[1]],
+          zoom: 17,
+          essential: true,
+        });
+      }
+    }
+  },
+  { immediate: true },
+);
+
 // ✅ 初始化地圖
 onMounted(async () => {
   if (!mapContainer.value) return;

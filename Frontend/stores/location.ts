@@ -1,30 +1,35 @@
-// v4 旗標 + 追蹤
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
+import { useToast } from "#imports";
 
 interface Coord {
   lat: number;
   lng: number;
 }
-const GEO_TIMEOUT = 10_000;
-const CACHE_TTL = 60_000;
+
+const GEO_TIMEOUT = 10_000; // 10秒 timeout
+const CACHE_TTL = 60_000; // 1分鐘有效
 
 export const useLocationStore = defineStore("location", () => {
-  /* state */
   const toast = useToast();
+
   const coords = ref<Coord | null>(null);
   const lastFetched = ref(0);
-  const panOnce = ref(false); // 只飛一次
-  const watching = ref(false); // 追蹤中？
+  const watching = ref(false);
   const watchId = ref<number | null>(null);
-  const errorMsg = ref<string | null>(null); // ⚠️ 新增：錯誤訊息可供 UI 顯示
+
+  const panOnce = ref(false); // 將 `flyTo` 行為用 flag 控制
+  const errorMsg = ref<string | null>(null);
+
   const hasPos = computed(() => coords.value !== null);
 
+  /** ✅ 單次定位 */
   async function locate(force = false): Promise<Coord> {
-    errorMsg.value = null; // 每次先清空
+    errorMsg.value = null;
 
-    if (!force && coords.value && Date.now() - lastFetched.value < CACHE_TTL)
+    if (!force && coords.value && Date.now() - lastFetched.value < CACHE_TTL) {
       return coords.value;
+    }
 
     if (!navigator.geolocation) {
       errorMsg.value = "此瀏覽器不支援定位功能";
@@ -55,40 +60,59 @@ export const useLocationStore = defineStore("location", () => {
             default:
               errorMsg.value = "定位失敗，請稍後再試";
           }
+
           toast.add({
-            title: "定位失敗",
+            title: "📍 定位失敗",
             description: errorMsg.value,
             color: "error",
           });
+
           reject(new Error(errorMsg.value));
         },
-        { enableHighAccuracy: true, timeout: GEO_TIMEOUT },
+        {
+          enableHighAccuracy: true,
+          timeout: GEO_TIMEOUT,
+        },
       );
     });
   }
 
+  /** ✅ 定位並設定 panOnce */
   async function locateAndRequestPan(force = false) {
-    await locate(force)
-      .then(() => {
-        if (hasPos.value) panOnce.value = true;
-      })
-      .catch(console.error); // 保留給 UI 顯示
+    try {
+      await locate(force);
+      if (hasPos.value) panOnce.value = true;
+    } catch (err) {
+      // 錯誤訊息已在 locate 中處理過
+    }
   }
 
-  /* ------- 追蹤 ------- */
+  /** ✅ 啟用追蹤 */
   function startWatch() {
     if (watchId.value !== null || !navigator.geolocation) return;
+
     watchId.value = navigator.geolocation.watchPosition(
       (pos) => {
-        coords.value = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        coords.value = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
         lastFetched.value = Date.now();
       },
-      console.error,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: GEO_TIMEOUT },
+      (err) => {
+        console.error("🔁 Watch error:", err);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: GEO_TIMEOUT,
+        maximumAge: 0,
+      },
     );
+
     watching.value = true;
   }
 
+  /** ✅ 停止追蹤 */
   function stopWatch() {
     if (watchId.value !== null) {
       navigator.geolocation.clearWatch(watchId.value);
@@ -97,11 +121,12 @@ export const useLocationStore = defineStore("location", () => {
     watching.value = false;
   }
 
+  /** ✅ 切換追蹤狀態 */
   function toggleWatch() {
     watching.value ? stopWatch() : startWatch();
   }
 
-  /* Map.vue call after flyTo */
+  /** ✅ 當 flyTo 完畢後應該手動重置 */
   function ackPan() {
     panOnce.value = false;
   }
@@ -112,6 +137,7 @@ export const useLocationStore = defineStore("location", () => {
     panOnce,
     watching,
     errorMsg,
+    locate,
     locateAndRequestPan,
     toggleWatch,
     ackPan,

@@ -8,6 +8,11 @@ import Profile from "./Profile/index.vue";
 import Filter from "./Filter.vue";
 import type { FilterOptions } from "./Filter.vue";
 import ReportListModal from "./ReportListModal.vue";
+import ToiletCard from "./ToiletCard.vue";
+import { BASE_URL } from "~/constants";
+import { useRouteStore } from "@/stores/useRouteStore";
+
+const routeStore = useRouteStore();
 
 const userStore = useUserStore();
 const locationStore = useLocationStore();
@@ -28,22 +33,46 @@ async function handleLocClick() {
   try {
     if (locationStore.watching) {
       locationStore.toggleWatch(); // 停止追蹤
-      await locationStore.locateAndRequestPan(); // 再飛一次
+      await locationStore.locateAndRequestPan(); // 再定位一次
     } else {
-      await locationStore.locateAndRequestPan();
+      await locationStore.locateAndRequestPan(); // 開始定位
       locationStore.toggleWatch(); // 啟動追蹤
     }
-    if (locationStore.errorMsg) {
-      hasError.value = true;
-    } else {
-      hasError.value = false;
-    }
+
+    hasError.value = !!locationStore.errorMsg;
   } catch (err) {
-    if (locationStore.errorMsg) {
-      hasError.value = true;
-    }
+    hasError.value = !!locationStore.errorMsg;
   }
 }
+
+const loading = ref(false);
+const results = ref<any[]>([]);
+const hasSearched = ref(false); // ✅ 控制是否顯示結果
+
+const onFilterUpdate = async (f: FilterOptions) => {
+  loading.value = true;
+  hasSearched.value = true; // 🔥 顯示結果區塊
+  results.value = [];
+  console.log("篩選條件更新:", f);
+
+  try {
+    await new Promise((r) => setTimeout(r, 800));
+    const res = await fetch(`${BASE_URL}/toilets/10`); // 模擬假資料
+    const toilet = await res.json();
+    results.value = [toilet];
+  } catch (err) {
+    results.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+watch(showFilter, (val) => {
+  if (!val) {
+    hasSearched.value = false;
+    results.value = [];
+  }
+});
 </script>
 
 <template>
@@ -63,10 +92,25 @@ async function handleLocClick() {
         <span class="hidden sm:inline ml-1">篩選</span>
       </UButton>
 
+      <UButton
+        v-if="routeStore.routeGeoJSON"
+        icon="i-lucide-x-circle"
+        size="md"
+        color="warning"
+        variant="soft"
+        @click="routeStore.clearRoute"
+      >
+        <span class="hidden sm:inline ml-1">清除路徑</span>
+      </UButton>
+
       <!-- 我的位置 / 導航中 -->
       <UButton
         :icon="
-          locationStore.watching ? 'i-lucide-navigation' : 'i-lucide-map-pinned'
+          hasError
+            ? 'i-lucide-alert-triangle'
+            : locationStore.watching
+              ? 'i-lucide-navigation'
+              : 'i-lucide-map-pin'
         "
         size="md"
         variant="soft"
@@ -145,15 +189,43 @@ async function handleLocClick() {
     </div>
   </header>
   <UModal v-model:open="showFilter">
-    <template #content>
-      <div class="p-4 space-y-2">
-        <h2 class="text-lg font-bold">🚻 廁所篩選</h2>
-        <Filter
-          @update:filters="(f: FilterOptions) => console.log('選擇條件', f)"
-        />
-        <UButton block @click="showFilter = false">關閉</UButton>
+    <template #header>
+      <h2 class="text-xl font-bold">🔍 篩選條件</h2>
+      <UButton
+        icon="i-lucide-x"
+        variant="link"
+        class="absolute right-4 top-4"
+        @click="showFilter = false"
+      />
+    </template>
+    <template #body>
+      <div class="p-4 space-y-6">
+        <template v-if="!hasSearched">
+          <Filter @update:filters="onFilterUpdate" />
+        </template>
+        <template v-if="hasSearched">
+          <div v-if="loading">
+            <USkeleton class="h-24 rounded-lg" v-for="i in 3" :key="i" />
+          </div>
+
+          <div v-else-if="results.length === 0">
+            <p class="text-sm text-gray-400 text-center mt-4">
+              😢 找不到符合的廁所
+            </p>
+          </div>
+
+          <div v-else class="space-y-4">
+            <ToiletCard
+              v-for="toilet in results"
+              :key="toilet.id"
+              :id="toilet.id"
+              @close="showFilter = false"
+            />
+          </div>
+        </template>
       </div>
     </template>
   </UModal>
+
   <ReportListModal :open="showReportModal" @close="showReportModal = false" />
 </template>

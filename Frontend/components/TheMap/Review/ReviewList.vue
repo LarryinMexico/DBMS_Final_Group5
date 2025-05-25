@@ -89,7 +89,7 @@ const sortedReviews = computed(() => {
   });
   return sorted;
 });
-const userModal = useUserModalStore()
+const userModal = useUserModalStore();
 </script>
 
 <template>
@@ -141,13 +141,12 @@ const userModal = useUserModalStore()
       :key="review.id"
       class="flex items-start space-x-3"
     >
-    <UAvatar
-      size="sm"
-      :src="userInfoMap[review.user_id]?.avatarUrl"
-      class="mt-3 cursor-pointer transition hover:opacity-80"
-      @click="userModal.open(review.user_id)"
-    />
-
+      <UAvatar
+        size="sm"
+        :src="userInfoMap[review.user_id]?.avatarUrl"
+        class="mt-3 cursor-pointer transition hover:opacity-80"
+        @click="userModal.open(review.user_id)"
+      />
 
       <div class="flex flex-col w-full">
         <div class="flex items-center justify-between">
@@ -243,13 +242,13 @@ const userModal = useUserModalStore()
         </div>
       </template>
     </UModal>
-  <UModal v-model:open="userModal.isOpen">
-    <template #content>
-      <Profile
-        :userId="userModal.userId?.toString() || ''"
-        @close="userModal.close()"
-      />
-    </template>
-  </UModal>
+    <UModal v-model:open="userModal.isOpen">
+      <template #content>
+        <Profile
+          :userId="userModal.userId?.toString() || ''"
+          @close="userModal.close()"
+        />
+      </template>
+    </UModal>
   </div>
 </template>
