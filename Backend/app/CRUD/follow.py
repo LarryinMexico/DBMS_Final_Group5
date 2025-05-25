@@ -1,33 +1,66 @@
 from sqlalchemy.orm import Session
-from app.models import follow as models
-from app.models import user as user
+from sqlalchemy import text
 from app.schemas import follow as schemas
 
-#開始追蹤，新增一筆追蹤的資料
+# 新增追蹤紀錄
 def create_follow(db: Session, follow: schemas.FollowCreate):
-    db_follow = models.Follow(**follow.dict())
-    db.add(db_follow)
+    """新增追蹤紀錄"""
+    insert_query = text("""
+        INSERT INTO follow (following_id, followed_id)
+        VALUES (:following_id, :followed_id)
+    """)
+    result = db.execute(insert_query, {
+        "following_id": follow.following_id,
+        "followed_id": follow.followed_id
+    })
     db.commit()
-    db.refresh(db_follow)
-    return db_follow
+    
+    inserted_id = result.lastrowid
+    select_query = text("SELECT * FROM follow WHERE id = :id")
+    row = db.execute(select_query, {"id": inserted_id}).fetchone()
 
+    if row:
+        return dict(row._mapping)
+    return None
 
-#查詢追蹤的人的清單
+# 根據使用者查詢他正在追蹤的人
 def get_following_user(db: Session, following_id: int):
-    return db.query(models.Follow).filter(models.Follow.following_id == following_id).all()
+    """取得使用者正在追蹤的人清單"""
+    query = text("SELECT * FROM follow WHERE following_id = :following_id")
+    rows = db.execute(query, {"following_id": following_id}).fetchall()
+    return [dict(row._mapping) for row in rows]
 
-#查詢被誰追蹤的清單
+# 根據使用者查詢他被誰追蹤
 def get_follower(db: Session, followed_id: int):
-    return db.query(models.Follow).filter(models.Follow.followed_id == followed_id).all()
+    """取得追蹤該使用者的人的清單"""
+    query = text("SELECT * FROM follow WHERE followed_id = :followed_id")
+    rows = db.execute(query, {"followed_id": followed_id}).fetchall()
+    return [dict(row._mapping) for row in rows]
 
-#取消追蹤
+# 取消追蹤
 def unfollow(db: Session, followed_id: int, following_id: int):
-    follow = db.query(models.Follow).filter_by(
-        followed_id=followed_id,
-        following_id=following_id
-    ).first()
-    if follow:
-        db.delete(follow)
-        db.commit()
-    return follow
+    """取消追蹤"""
+    check_query = text("""
+        SELECT * FROM follow 
+        WHERE followed_id = :followed_id AND following_id = :following_id
+        LIMIT 1
+    """)
+    row = db.execute(check_query, {
+        "followed_id": followed_id,
+        "following_id": following_id
+    }).fetchone()
+    
+    if row is None:
+        return None
 
+    delete_query = text("""
+        DELETE FROM follow 
+        WHERE followed_id = :followed_id AND following_id = :following_id
+    """)
+    db.execute(delete_query, {
+        "followed_id": followed_id,
+        "following_id": following_id
+    })
+    db.commit()
+
+    return dict(row._mapping)
