@@ -6,13 +6,22 @@ from app.db.session import get_db
 from app.models.review import Review
 from typing import List
 from sqlalchemy import func
+from app.socketio import sio 
 
 router = APIRouter()
 
 #新增 review
 @router.post("/", response_model = review_schemas.ReviewOut)
-def create_review(review: review_schemas.ReviewCreate, db: Session=Depends(get_db)):
+async def create_review(review: review_schemas.ReviewCreate, db: Session=Depends(get_db)):
     created = review_crud.create_review(db,review)
+    print("created", created)
+    await sio.emit("comment-received", {
+        "toiletId": created["toilet_id"],
+        "user": created["user_id"],
+        "comment": created["comment"],
+        "rating": created["rating"],
+    })
+
     return created
 
 #修改 review
