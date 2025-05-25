@@ -53,16 +53,25 @@ const hasSearched = ref(false); // ✅ 控制是否顯示結果
 
 const onFilterUpdate = async (f: FilterOptions) => {
   loading.value = true;
-  hasSearched.value = true; // 🔥 顯示結果區塊
+  hasSearched.value = true;
   results.value = [];
-  console.log("篩選條件更新:", f);
-
   try {
-    await new Promise((r) => setTimeout(r, 800));
-    const res = await fetch(`${BASE_URL}/toilets/10`); // 模擬假資料
-    const toilet = await res.json();
-    results.value = [toilet];
+    const res = await fetch(`${BASE_URL}/search/toilets/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        max_floor: f.floorMax,
+        min_review_count: f.reviewCountMin,
+        min_average_rating: f.averageRatingMin,
+        amenity_ids: f.amenities?.map(Number) || [],
+      }),
+    });
+
+    if (!res.ok) throw new Error("搜尋失敗");
+    const data = await res.json();
+    results.value = data;
   } catch (err) {
+    console.error("❌ 搜尋失敗", err);
     results.value = [];
   } finally {
     loading.value = false;

@@ -63,9 +63,6 @@ const update = async () => {
 
   emit("update:filters", filters.value);
 
-  // 🔧 模擬回傳固定資料，例如 id = 10 的廁所
-  console.log("🚽 模擬篩選結果：廁所 #10");
-
   isLoading.value = false;
 };
 </script>

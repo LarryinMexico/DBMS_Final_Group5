@@ -40,14 +40,9 @@ def search_toilets(
         sql += " AND COALESCE(r.avg_rating, 0) >= :min_average_rating"
         params["min_average_rating"] = filters.min_average_rating
 
-    if filters.amenity_id is not None:
-        sql += " AND h.amenity_id = :amenity_id"
-        params["amenity_id"] = filters.amenity_id
-
-    if filters.amenity_id is not None and filters.amenity_id > 0:
-        sql += " AND h.amenity_id = :amenity_id"
-        params["amenity_id"] = filters.amenity_id
-
+    if filters.amenity_ids:
+        sql += " AND h.amenity_id IN :amenity_ids"
+        params["amenity_ids"] = tuple(filters.amenity_ids)  # 必須轉成 tuple
 
     sql += " LIMIT :limit OFFSET :skip"
     params["limit"] = limit
