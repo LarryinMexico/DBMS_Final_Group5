@@ -11,6 +11,7 @@ import ReportListModal from "./ReportListModal.vue";
 import ToiletCard from "./ToiletCard.vue";
 import { BASE_URL } from "~/constants";
 import { useRouteStore } from "@/stores/useRouteStore";
+import { useOnboarding } from "@/utils/useOnboarding";
 
 useSocket();
 
@@ -90,6 +91,21 @@ const { isSignedIn } = useUser();
 const showModal = computed(() => {
   return !isSignedIn.value;
 });
+
+onMounted(async () => {
+  if (typeof window === "undefined") return; // 確保 client only
+
+  await nextTick(); // 等待 DOM 渲染
+
+  setTimeout(() => {
+    const shown = localStorage.getItem("headerTourDone");
+    if (!shown) {
+      const { startTour } = useOnboarding();
+      startTour();
+      localStorage.setItem("headerTourDone", "true");
+    }
+  }, 500); // 延遲 500ms 避免與 SSR hydration 衝突
+});
 </script>
 
 <template>
@@ -100,6 +116,7 @@ const showModal = computed(() => {
     <!-- 功能列 -->
     <div class="flex items-end gap-2">
       <UButton
+        class="filter-btn"
         icon="i-lucide-filter"
         size="md"
         variant="soft"
@@ -122,6 +139,7 @@ const showModal = computed(() => {
 
       <!-- 我的位置 / 導航中 -->
       <UButton
+        class="locate-btn"
         :icon="
           hasError
             ? 'i-lucide-alert-triangle'
@@ -139,6 +157,7 @@ const showModal = computed(() => {
 
       <!-- 個人資料 -->
       <UButton
+        class="profile-btn"
         icon="i-heroicons-user-circle"
         size="md"
         variant="soft"

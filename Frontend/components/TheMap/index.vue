@@ -36,6 +36,7 @@ async function renderBuildingMarkers() {
     const el = document.createElement("div");
 
     el.innerText = "🚻";
+    el.classList.add("building-marker"); // 🏷️ Shepherd 導覽會用這個
 
     // 判斷主題
     const isDarkMode = document.documentElement.classList.contains("dark");

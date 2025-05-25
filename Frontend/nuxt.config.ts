@@ -3,7 +3,11 @@ export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
   modules: ["@nuxt/ui", "@clerk/nuxt", "@pinia/nuxt"],
-  css: ["~/assets/css/tailwind.css", "mapbox-gl/dist/mapbox-gl.css"],
+  css: [
+    "~/assets/css/tailwind.css",
+    "mapbox-gl/dist/mapbox-gl.css",
+    "shepherd.js/dist/css/shepherd.css",
+  ],
   app: {
     rootAttrs: {
       "data-vaul-drawer-wrapper": "",
