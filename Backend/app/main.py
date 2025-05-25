@@ -35,5 +35,19 @@ def root():
 # 🚀 用 SocketIO 包住 FastAPI app，這裡才是 final app
 app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app)
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+@app.middleware("http")
+async def catch_all(request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        print("🔥 捕獲錯誤:", e)
+        raise
+
+
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8080)
