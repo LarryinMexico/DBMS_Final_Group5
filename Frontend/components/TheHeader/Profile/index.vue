@@ -156,7 +156,7 @@ const toggleFollow = async () => {
           <ProfileFavorites :userId="props.userId" />
         </div>
         <div v-else-if="item.label === '評論'" class="space-y-2">
-          <ProfileReview :reviews="reviews" />
+          <ProfileReview :userId="props.userId" />
         </div>
         <div v-else-if="item.label === '統計'" class="space-y-2">
           <ProfileStats :userId="props.userId" />

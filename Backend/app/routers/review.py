@@ -70,3 +70,45 @@ def get_review_stats(db: Session = Depends(get_db)):
         }
         for row in results
     ]
+
+@router.get("/user/{user_id}/full")
+def get_full_reviews_by_user(user_id: int, db: Session = Depends(get_db)):
+    """
+    回傳該使用者的所有評論，附帶使用者資訊、廁所名稱與 reactions 數量。
+    """
+    from sqlalchemy import text
+
+    query = text("""
+        SELECT r.id, r.rating, r.comment, r.updateAt,
+            u.id AS user_id, u.name AS user_name, u.avatarUrl,
+            t.id AS toilet_id, t.title AS toilet_title,
+            (SELECT COUNT(*) FROM reaction WHERE review_id = r.id) AS reactions_count
+        FROM review r
+        JOIN `users` u ON r.user_id = u.id
+        JOIN toilet t ON r.toilet_id = t.id
+        WHERE r.user_id = :user_id
+        ORDER BY r.updateAt DESC
+    """)
+
+    result = db.execute(query, {"user_id": user_id})
+    rows = result.fetchall()
+
+    return [
+        {
+            "id": row.id,
+            "rating": row.rating,
+            "comment": row.comment,
+            "updateAt": row.updateAt,
+            "toilet": {
+                "id": row.toilet_id,
+                "title": row.toilet_title,
+            },
+            "user": {
+                "id": row.user_id,
+                "name": row.user_name,
+                "avatarUrl": row.avatarUrl,
+            },
+            "reactionsCount": row.reactions_count,
+        }
+        for row in rows
+    ]
