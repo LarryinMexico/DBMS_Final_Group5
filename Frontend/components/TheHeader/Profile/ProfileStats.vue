@@ -21,23 +21,44 @@ onMounted(async () => {
   const countsByBuilding: Record<string, number> = {};
   const timestamps: string[] = [];
 
-  for (const r of reviews) {
-    const time = new Date(r.createAt).toLocaleString();
-    timestamps.push(time);
+const toiletMap = new Map<number, any>();
+const buildingMap = new Map<number, any>();
 
-    countsByRating[r.rating] = (countsByRating[r.rating] ?? 0) + 1;
+for (const r of reviews) {
+  // 🕒 加入時間
+  timestamps.push(new Date(r.createAt).toLocaleString());
 
-    const toiletRes = await fetch(`${BASE_URL}/toilets/${r.toilet_id}`);
-    const toilet = await toiletRes.json();
+  // ⭐ 加入評分統計
+  countsByRating[r.rating] = (countsByRating[r.rating] ?? 0) + 1;
 
-    const buildingRes = await fetch(
-      `${BASE_URL}/buildings/${toilet.building_id}`,
-    );
-    const building = await buildingRes.json();
+  try {
+    // 🚽 取得 toilet（有快取）
+    let toilet = toiletMap.get(r.toilet_id);
+    if (!toilet) {
+      const res = await fetch(`${BASE_URL}/toilets/${r.toilet_id}`);
+      if (!res.ok) throw new Error(`toilet ${r.toilet_id} fetch failed`);
+      toilet = await res.json();
+      toiletMap.set(r.toilet_id, toilet);
+    }
+
+    // 🏢 取得 building（有快取）
+    const buildingId = toilet.building_id;
+    let building = buildingMap.get(buildingId);
+    if (!building) {
+      const res = await fetch(`${BASE_URL}/buildings/${buildingId}`);
+      if (!res.ok) throw new Error(`building ${buildingId} fetch failed`);
+      building = await res.json();
+      buildingMap.set(buildingId, building);
+    }
 
     const name = building.name || "未知";
     countsByBuilding[name] = (countsByBuilding[name] ?? 0) + 1;
+  } catch (err) {
+    console.error("❌ 資料取得失敗：", err);
+    // 若失敗仍保底加入未知分類
+    countsByBuilding["未知"] = (countsByBuilding["未知"] ?? 0) + 1;
   }
+}
 
   // 累積評論數資料
   const sortedTimestamps = timestamps
