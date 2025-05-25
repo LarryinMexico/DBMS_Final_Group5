@@ -320,13 +320,16 @@ const addAmenity = async () => {
 
         <UButton
           v-if="!isLoading"
-          :label="favorites.has(toilet.id) ? '已加入' : '我的最愛'"
           :color="favorites.has(toilet.id) ? 'success' : 'error'"
           variant="soft"
           icon="i-heroicons-heart"
           size="xs"
           @click.stop="toggleFavorite(toilet.id)"
-        />
+        >
+          <span class="hidden sm:inline ml-1">
+            {{ favorites.has(toilet.id) ? "已加入" : "我的最愛" }}
+          </span>
+        </UButton>
 
         <UButton v-else loading variant="soft" color="neutral" size="xs" />
         <UButton
@@ -339,7 +342,7 @@ const addAmenity = async () => {
             showReportModal = true;
           "
         >
-          回報問題
+        <span class="hidden sm:inline ml-1">篩選</span>
         </UButton>
 
         <UButton
@@ -353,7 +356,7 @@ const addAmenity = async () => {
             editTitle = toilet.title || '';
           "
         >
-          編輯
+        <span class="hidden sm:inline ml-1">篩選</span>
         </UButton>
       </div>
     </UCard>

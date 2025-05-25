@@ -50,7 +50,6 @@ function backToList() {
               icon="i-lucide-chevron-left"
               class="text-md text-gray-500 hover:text-gray-700"
               @click="backToList"
-              label="返回"
             />
           </div>
 

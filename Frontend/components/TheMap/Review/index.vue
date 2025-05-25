@@ -62,7 +62,7 @@ const fetchAmenitiesForToilet = async (toiletId: number) => {
 
 <template>
   <div class="space-y-4">
-    <UCard v-if="!isLoadingReports && reports.length > 0">
+    <UCard v-if="!isLoadingReports">
       <div class="space-y-3">
         <div class="mb-3">
           <h3
@@ -70,11 +70,22 @@ const fetchAmenitiesForToilet = async (toiletId: number) => {
           >
             <UIcon
               name="i-heroicons-exclamation-triangle"
-              class="text-red-500"
+              class="text-red-500 mt-0.5"
+              size="20"
             />
             問題回報
           </h3>
           <div class="space-y-2">
+          <div
+              v-if="reports.length === 0"
+              class="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700"
+            >
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              此廁所目前沒有待處理的報修 🥳
+            </p>
+          </div>
+          <div v-if="isLoadingReports" class="text-gray-500">載入中...</div>
+          <div v-else>
             <div
               v-for="r in reports"
               :key="r.id"
@@ -83,6 +94,7 @@ const fetchAmenitiesForToilet = async (toiletId: number) => {
               <p class="text-sm text-gray-700 dark:text-gray-300">
                 {{ r.description }}
               </p>
+            </div>
             </div>
           </div>
         </div>
