@@ -2,7 +2,9 @@ import socketio
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    ping_interval=25,  # 每 25 秒發 ping，讓 Cloud Run 不殺連線
+    cors_allowed_origins=["*"],  # ✅ 若未設，會被 Cloud Run 擋掉
+    ping_interval=25,
     ping_timeout=60,
 )
+
 
