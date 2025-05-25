@@ -3,7 +3,7 @@ import uvicorn
 import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import user, toilet, building, favorite, review, reaction, amenity, report, follow
+from app.routers import user, toilet, building, favorite, review, reaction, amenity, report, follow, search
 from app.socketio import sio
 
 # 原始 FastAPI app
@@ -19,6 +19,7 @@ fastapi_app.include_router(reaction.router, prefix="/reactions", tags=["Reaction
 fastapi_app.include_router(amenity.router, prefix="/amenities", tags=["Amenities"])
 fastapi_app.include_router(report.router, prefix="/reports", tags=["Reports"])
 fastapi_app.include_router(follow.router, prefix="/follows", tags=["Follows"])
+fastapi_app.include_router(search.router, prefix="/search", tags=["Search"])
 
 fastapi_app.add_middleware(
     CORSMiddleware,
