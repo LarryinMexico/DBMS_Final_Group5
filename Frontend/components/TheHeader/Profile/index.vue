@@ -3,6 +3,7 @@
 import { BASE_URL } from "@/constants";
 import ProfileReview from "./ProfileReview.vue";
 import ProfileFavorites from "./ProfileFavorites.vue";
+import ProfileStats from "./ProfileStats.vue";
 
 const props = defineProps<{ userId: string }>();
 
@@ -157,7 +158,10 @@ const toggleFollow = async () => {
         <div v-else-if="item.label === '評論'" class="space-y-2">
           <ProfileReview :reviews="reviews" />
         </div>
-        <div v-else class="text-sm text-gray-400">🚧 尚未實作</div>
+<div v-else-if="item.label === '統計'" class="space-y-2">
+  <ProfileStats :userId="props.userId" />
+</div>
+
       </template>
     </UTabs>
   </div>
