@@ -44,44 +44,47 @@ const userInfoMap = ref<UserMap>({});
 const toiletTitleMap = ref<Record<number, string>>({});
 const drawerStore = useToiletDrawer();
 
-const fetchReactionsAndUsers = async () => {
+const userInfo = ref<{ name: string; avatarUrl: string }>({
+  name: "",
+  avatarUrl: "",
+});
+
+const fetchReactionsAndToilets = async () => {
   const reactions: Record<number, number> = {};
-  const users: UserMap = {};
   const titles: Record<number, string> = {};
+
+  // ✅ 只抓一次 user
+  const userRes = await fetch(`${BASE_URL}/users/${props.reviews[0].user_id}`);
+  const userData = await userRes.json();
+  userInfo.value = {
+    name: userData.name,
+    avatarUrl: userData.avatarUrl,
+  };
 
   await Promise.all(
     props.reviews.map(async (review) => {
       try {
-        const [reactionRes, userRes, toiletRes] = await Promise.all([
+        const [reactionRes, toiletRes] = await Promise.all([
           fetch(`${BASE_URL}/reactions/review/${review.id}`),
-          fetch(`${BASE_URL}/users/${review.user_id}`),
           fetch(`${BASE_URL}/toilets/${review.toilet_id}`),
         ]);
 
-        const reactionData = await reactionRes.json();
-        reactions[review.id] = reactionData.length || 0;
-
-        const userData = await userRes.json();
-        users[review.user_id] = {
-          name: userData.name,
-          avatarUrl: userData.avatarUrl,
-        };
+        reactions[review.id] = (await reactionRes.json()).length || 0;
 
         const toiletData = await toiletRes.json();
         titles[review.toilet_id] =
           toiletData.title || `廁所 #${review.toilet_id}`;
-      } catch (e) {
+      } catch {
         reactions[review.id] = 0;
       }
     }),
   );
 
   reactionMap.value = reactions;
-  userInfoMap.value = users;
   toiletTitleMap.value = titles;
 };
 
-onMounted(fetchReactionsAndUsers);
+onMounted(fetchReactionsAndToilets);
 
 const sortedReviews = computed(() => {
   if (!Array.isArray(props.reviews)) return [];
@@ -97,7 +100,6 @@ const sortedReviews = computed(() => {
 const paginatedReviews = computed(() => {
   const start = (currentPage.value - 1) * props.pageSize;
   const end = start + props.pageSize;
-  console.log("paginatedReviews", start, end);
   return sortedReviews.value.slice(start, end);
 });
 </script>
@@ -138,21 +140,12 @@ const paginatedReviews = computed(() => {
       class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition"
     >
       <div class="flex items-start space-x-3">
-        <UAvatar
-          size="sm"
-          class="mt-3"
-          :src="userInfoMap[review.user_id]?.avatarUrl"
-        />
+        <UAvatar size="sm" class="mt-3" :src="userInfo.avatarUrl" />
 
         <div class="flex flex-col w-full">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
-              <p class="text-sm font-semibold">
-                {{
-                  userInfoMap[review.user_id]?.name ||
-                  `使用者 ${review.user_id}`
-                }}
-              </p>
+              {{ userInfo.name || `使用者 ${props.reviews[0].user_id}` }}
               <div class="flex items-center space-x-1 text-yellow-500">
                 <UIcon
                   v-for="n in 5"

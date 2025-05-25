@@ -194,21 +194,21 @@ const showModal = computed(() => {
       </SignedOut>
       <SignedIn><UserButton /></SignedIn>
       <UModal v-model:open="showModal" :dismissible="false">
-          <template #header>
-            <div class="text-lg font-bold">請先登入</div>
-          </template>
+        <template #header>
+          <div class="text-lg font-bold">請先登入</div>
+        </template>
 
-          <template #body>
-            <SignIn 
-              :appearance="{
-                elements: {
-                  button:
-                    'bg-green-500 hover:bg-green-600 text-white rounded px-3 py-2',
-                },
-              }"
-            />
-          </template>
-        </UModal>
+        <template #body>
+          <SignIn
+            :appearance="{
+              elements: {
+                button:
+                  'bg-green-500 hover:bg-green-600 text-white rounded px-3 py-2',
+              },
+            }"
+          />
+        </template>
+      </UModal>
     </div>
   </header>
   <UModal v-model:open="showFilter">

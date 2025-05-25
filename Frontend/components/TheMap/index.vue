@@ -232,7 +232,6 @@ watch(colorMode, () => {
 </script>
 
 <template>
-
   <ToiletDrawer
     v-if="selectedBuilding"
     v-model:open="drawerOpen"
@@ -242,8 +241,8 @@ watch(colorMode, () => {
     :toilets="selectedBuilding.toilets"
     @close="drawerOpen = false"
   />
-  
-    <UModal v-model:open="userModal.isOpen">
+
+  <UModal v-model:open="userModal.isOpen">
     <template #content>
       <Profile
         :userId="userModal.userId?.toString() || ''"
