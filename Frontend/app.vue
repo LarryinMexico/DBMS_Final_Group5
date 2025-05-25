@@ -1,7 +1,3 @@
-<script setup>
-useSocket();
-</script>
-
 <template>
   <UApp>
     <div class="bg-default" data-vaul-drawer-wrapper>

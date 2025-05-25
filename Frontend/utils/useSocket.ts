@@ -28,11 +28,6 @@ export const useSocket = () => {
     hasRegisteredListeners = true;
 
     socket.on("connect", () => {
-      toast.add({
-        title: "已連線到伺服器",
-        description: `Socket ID: ${socket.id}`,
-        color: "primary",
-      });
       joinRoom(); // 🚀 自動加入自己的房間
     });
 
@@ -79,7 +74,6 @@ export const useSocket = () => {
 
     socket.on("disconnect", () => {
       console.warn("❌ Socket disconnected");
-      toast.add({ title: "連線中斷", color: "warning" });
     });
   };
 

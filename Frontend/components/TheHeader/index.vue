@@ -11,7 +11,7 @@ import ReportListModal from "./ReportListModal.vue";
 import ToiletCard from "./ToiletCard.vue";
 import { BASE_URL } from "~/constants";
 import { useRouteStore } from "@/stores/useRouteStore";
-
+useSocket();
 const routeStore = useRouteStore();
 
 const userStore = useUserStore();
