@@ -309,7 +309,7 @@ const addAmenity = async () => {
             {{
               stats[toilet.id]?.avg_rating
                 ? stats[toilet.id].avg_rating.toFixed(1)
-                : "尚無評分"
+                : "無評分"
             }}
           </span>
         </div>
@@ -342,7 +342,7 @@ const addAmenity = async () => {
             showReportModal = true;
           "
         >
-        <span class="hidden sm:inline ml-1">篩選</span>
+        <span class="hidden sm:inline ml-1">回報</span>
         </UButton>
 
         <UButton
@@ -356,7 +356,7 @@ const addAmenity = async () => {
             editTitle = toilet.title || '';
           "
         >
-        <span class="hidden sm:inline ml-1">篩選</span>
+        <span class="hidden sm:inline ml-1">編輯</span>
         </UButton>
       </div>
     </UCard>

@@ -158,7 +158,7 @@ const emit = defineEmits<{
           {{
             stats[toilet.id]?.avg_rating
               ? stats[toilet.id].avg_rating.toFixed(1)
-              : "尚無評分"
+              : "無評分"
           }}
         </span>
       </div>

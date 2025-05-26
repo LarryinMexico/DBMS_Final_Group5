@@ -102,7 +102,7 @@ const update = async () => {
       </label>
       <USlider
         v-model="averageRatingMin"
-        :min="1"
+        :min="0"
         :max="5"
         :step="0.5"
         class="w-full"
