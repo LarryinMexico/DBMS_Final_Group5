@@ -280,6 +280,7 @@ watch(
 </script>
 
 <template>
+
   <ToiletDrawer
     v-if="selectedBuilding"
     v-model:open="drawerOpen"
@@ -289,8 +290,7 @@ watch(
     :toilets="selectedBuilding.toilets"
     @close="drawerOpen = false"
   />
-
-  <UModal v-model:open="userModal.isOpen">
+      <UModal v-model:open="userModal.isOpen" class="z-[1000]">
     <template #content>
       <Profile
         :userId="userModal.userId?.toString() || ''"

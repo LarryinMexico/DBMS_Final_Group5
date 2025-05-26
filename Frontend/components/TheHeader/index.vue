@@ -99,7 +99,7 @@ onMounted(async () => {
 
   setTimeout(() => {
     const shown = localStorage.getItem("headerTourDone");
-    if (!shown) {
+    if (!shown && isSignedIn.value) {
       const { startTour } = useOnboarding();
       startTour();
       localStorage.setItem("headerTourDone", "true");

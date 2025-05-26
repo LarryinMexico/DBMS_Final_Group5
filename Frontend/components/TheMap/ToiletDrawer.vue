@@ -36,7 +36,7 @@ function backToList() {
 </script>
 
 <template>
-  <UDrawer v-model="localOpen" direction="left" @close="emit('close')">
+  <UDrawer v-model="localOpen" direction="left" @close="emit('close')" class="sm:max-w-[350px] sm:min-w-[350px] max-w-full min-w-full" :overlay="false">
     <template #header>
       <div class="px-4 py-2">
         <div
